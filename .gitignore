@@ -1,0 +1,27 @@
+# Go
+bin/
+*.exe
+
+# Java
+target/
+*.class
+*.jar
+
+# Node
+node_modules/
+dist/
+
+# Angular
+.angular/
+
+# Environment
+.env
+*.env
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Docker
+.docker/
