@@ -1,0 +1,28 @@
+services:
+  stakeholders-service:
+    build: ./stakeholders-service
+    ports:
+      - "8081:8081"
+    env_file:
+      - ./stakeholders-service/.env
+    depends_on:
+      postgres-stakeholders:
+        condition: service_healthy
+
+  postgres-stakeholders:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: stakeholders_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+networks:
+  default:
+    name: tourism-network

@@ -1,0 +1,41 @@
+package repository
+
+import (
+	"stakeholders-service/models"
+
+	"gorm.io/gorm"
+)
+
+type UserRepository struct {
+	DB *gorm.DB
+}
+
+func NewUserRepository(db *gorm.DB) *UserRepository {
+	return &UserRepository{DB: db}
+}
+
+func (r *UserRepository) CreateUser(user *models.User) error {
+	return r.DB.Create(user).Error
+}
+
+func (r *UserRepository) FindByUsername(username string) (*models.User, error) {
+	var user models.User
+	result := r.DB.Where("username = ?", username).First(&user)
+	return &user, result.Error
+}
+
+func (r *UserRepository) FindByEmail(email string) (*models.User, error) {
+	var user models.User
+	result := r.DB.Where("email = ?", email).First(&user)
+	return &user, result.Error
+}
+
+func (r *UserRepository) GetAllUsers() ([]models.User, error) {
+	var users []models.User
+	result := r.DB.Find(&users)
+	return users, result.Error
+}
+
+func (r *UserRepository) CreateProfile(profile *models.Profile) error {
+	return r.DB.Create(profile).Error
+}
