@@ -1,0 +1,35 @@
+<div class="register-container">
+  <h2>Registracija</h2>
+
+  <div *ngIf="error" class="error">{{ error }}</div>
+  <div *ngIf="success" class="success">{{ success }}</div>
+
+  <form (ngSubmit)="onRegister()">
+    <div>
+      <label>Username</label>
+      <input type="text" [(ngModel)]="username" name="username" required />
+    </div>
+
+    <div>
+      <label>Password</label>
+      <input type="password" [(ngModel)]="password" name="password" required />
+    </div>
+
+    <div>
+      <label>Email</label>
+      <input type="email" [(ngModel)]="email" name="email" required />
+    </div>
+
+    <div>
+      <label>Uloga</label>
+      <select [(ngModel)]="role" name="role">
+        <option value="tourist">Turista</option>
+        <option value="guide">Vodič</option>
+      </select>
+    </div>
+
+    <button type="submit">Registruj se</button>
+  </form>
+
+  <p>Već imate nalog? <a routerLink="/login">Ulogujte se</a></p>
+</div>
