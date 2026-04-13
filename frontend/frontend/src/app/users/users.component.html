@@ -1,0 +1,37 @@
+<div class="users-container">
+  <h2>Korisnici</h2>
+
+  <div *ngIf="loading" class="loading">Učitavanje...</div>
+
+  <div *ngIf="error && !loading" class="error">{{ error }}</div>
+
+  <div *ngIf="!loading && users.length > 0" class="table-wrapper">
+    <table class="users-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Korisničko ime</th>
+          <th>Email</th>
+          <th>Uloga</th>
+          <th>Blokiran</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of users">
+          <td>{{ user.id }}</td>
+          <td>{{ user.username }}</td>
+          <td>{{ user.email }}</td>
+          <td>{{ user.role }}</td>
+          <td>
+            <span *ngIf="user.isBlocked" class="badge blocked">DA</span>
+            <span *ngIf="!user.isBlocked" class="badge active">NE</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div *ngIf="!loading && users.length === 0 && !error" class="no-data">
+    Nema korisnika
+  </div>
+</div>

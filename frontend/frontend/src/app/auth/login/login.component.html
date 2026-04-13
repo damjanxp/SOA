@@ -1,0 +1,21 @@
+<div class="login-container">
+  <h2>Login</h2>
+
+  <div *ngIf="error" class="error">{{ error }}</div>
+
+  <form (ngSubmit)="onLogin()">
+    <div>
+      <label>Username</label>
+      <input type="text" [(ngModel)]="username" name="username" required />
+    </div>
+
+    <div>
+      <label>Password</label>
+      <input type="password" [(ngModel)]="password" name="password" required />
+    </div>
+
+    <button type="submit">Login</button>
+  </form>
+
+  <p>Nemate nalog? <a routerLink="/register">Registrujte se</a></p>
+</div>
