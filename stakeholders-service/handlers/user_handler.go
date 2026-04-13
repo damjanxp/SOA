@@ -60,3 +60,16 @@ func (h *UserHandler) BlockUser(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "Korisnik blokiran"})
 }
+
+
+func (h *UserHandler) GetMyProfile(c *gin.Context) {
+	userID := c.GetString("userId")
+
+	profile, err := h.UserRepo.GetProfileByUserID(userID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Profil nije pronadjen"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": profile})
+}

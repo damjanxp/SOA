@@ -1,0 +1,24 @@
+<div class="profile-container">
+  <div *ngIf="loading">Učitavanje...</div>
+
+  <div *ngIf="error && !loading">{{ error }}</div>
+
+  <div *ngIf="profile && !loading" class="profile-card">
+    <!-- SLIKA -->
+    <img class="avatar" [src]="profile.profileImageUrl || 'assets/image.png'" />
+
+    <!-- USER INFO -->
+    <h2>{{ profile.username }}</h2>
+    <p class="email">{{ profile.email }}</p>
+
+    <hr />
+
+    <!-- DETALJI -->
+    <div class="info">
+      <p><b>Ime:</b> {{ profile.firstName || "" }}</p>
+      <p><b>Prezime:</b> {{ profile.lastName || "" }}</p>
+      <p><b>Bio:</b> {{ profile.bio || "" }}</p>
+      <p><b>Moto:</b> "{{ profile.motto || "" }}"</p>
+    </div>
+  </div>
+</div>

@@ -1,6 +1,11 @@
 <nav class="navbar">
   <div class="navbar-content">
     <h1 class="navbar-title">Tourism App</h1>
-    <button class="logout-btn" (click)="logout()">Odjava</button>
+
+    <div class="nav-actions" *ngIf="authService.isLoggedIn()">
+      <button class="logout-btn" routerLink="/profile">Moj profil</button>
+
+      <button class="logout-btn" (click)="logout()">Odjava</button>
+    </div>
   </div>
 </nav>
