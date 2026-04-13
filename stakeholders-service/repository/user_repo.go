@@ -39,3 +39,21 @@ func (r *UserRepository) GetAllUsers() ([]models.User, error) {
 func (r *UserRepository) CreateProfile(profile *models.Profile) error {
 	return r.DB.Create(profile).Error
 }
+
+func (r *UserRepository) FindById(id string) (*models.User, error) {
+	var user models.User
+	result := r.DB.Where("id = ?", id).First(&user)
+	return &user, result.Error
+}
+
+func (r *UserRepository) BlockUser(userID string) error {
+	return r.DB.Model(&models.User{}).
+		Where("id = ?", userID).
+		Update("is_blocked", true).Error
+}
+
+func (r *UserRepository) GetProfileByUserID(userID string) (*models.Profile, error) {
+	var profile models.Profile
+	result := r.DB.Where("user_id = ?", userID).First(&profile)
+	return &profile, result.Error
+}
