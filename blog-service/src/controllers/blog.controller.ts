@@ -2,6 +2,19 @@ import { Response } from "express";
 import Blog from "../models/blog.model";
 import { AuthRequest } from "../middleware/auth.middleware";
 
+function parsePositiveInt(value: unknown, fallback: number): number {
+  if (typeof value !== "string") {
+    return fallback;
+  }
+
+  const parsed = Number.parseInt(value, 10);
+  if (!Number.isFinite(parsed) || parsed < 1) {
+    return fallback;
+  }
+
+  return parsed;
+}
+
 /**
  * POST /api/blogs
  * Creates a new blog post. Requires authentication.
@@ -120,5 +133,72 @@ export async function updateComment(
     res.status(200).json(updatedBlog);
   } catch (error) {
     res.status(500).json({ message: "Failed to update comment", error });
+  }
+}
+
+/**
+ * GET /api/blogs
+ * Returns a paginated list of blogs. Requires authentication.
+ */
+export async function getBlogs(
+  req: AuthRequest,
+  res: Response
+): Promise<void> {
+  try {
+    const maxPageSize = parsePositiveInt(process.env.MAX_PAGE_SIZE, 20);
+    const page = parsePositiveInt(req.query.page, 1);
+    const limit = Math.min(parsePositiveInt(req.query.limit, 10), maxPageSize);
+    const authorId =
+      typeof req.query.authorId === "string" ? req.query.authorId : undefined;
+
+    const filter = authorId ? { authorId } : {};
+
+    const [blogs, total] = await Promise.all([
+      Blog.find(filter)
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit),
+      Blog.countDocuments(filter),
+    ]);
+
+    const totalPages = Math.ceil(total / limit) || 1;
+
+    res.status(200).json({
+      data: blogs,
+      total,
+      page,
+      limit,
+      totalPages,
+      message: "OK",
+    });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ error: "Failed to fetch blogs", details: String(error) });
+  }
+}
+
+/**
+ * GET /api/blogs/:id
+ * Returns a single blog by id. Requires authentication.
+ */
+export async function getBlogById(
+  req: AuthRequest,
+  res: Response
+): Promise<void> {
+  try {
+    const id = req.params.id as string;
+    const blog = await Blog.findById(id);
+
+    if (!blog) {
+      res.status(404).json({ error: "Blog not found" });
+      return;
+    }
+
+    res.status(200).json({ data: blog, message: "OK" });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ error: "Failed to fetch blog", details: String(error) });
   }
 }

@@ -23,6 +23,38 @@ services:
       timeout: 5s
       retries: 5
 
+  blog-service:
+    build: ./blog-service
+    ports:
+      - "8082:8082"
+    env_file:
+      - ./blog-service/.env
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/blog_db
+    depends_on:
+      mongo:
+        condition: service_healthy
+
+  mongo:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  follower-service:
+    build: ./follower-service
+    ports:
+      - "8084:8084"
+
+  tour-service:
+    build: ./tour-service
+    ports:
+      - "8083:8083"
+
 networks:
   default:
     name: tourism-network

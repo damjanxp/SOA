@@ -2,19 +2,34 @@ import { Router } from "express";
 import { authMiddleware } from "../middleware/auth.middleware";
 import {
   createBlog,
+  getBlogs,
+  getBlogById,
   addComment,
   updateComment,
 } from "../controllers/blog.controller";
+import { likeBlog, unlikeBlog } from "../controllers/like.controller";
 
 const router = Router();
 
-// Create a new blog post
+
 router.post("/", authMiddleware, createBlog);
 
-// Add a comment to a blog post
+
+router.get("/", authMiddleware, getBlogs);
+
+
+router.get("/:id", authMiddleware, getBlogById);
+
+
 router.post("/:id/comments", authMiddleware, addComment);
 
-// Update an existing comment
+
 router.put("/:id/comments/:commentId", authMiddleware, updateComment);
+
+
+router.post("/:id/like", authMiddleware, likeBlog);
+
+
+router.delete("/:id/like", authMiddleware, unlikeBlog);
 
 export default router;
