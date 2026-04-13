@@ -62,6 +62,7 @@ func main() {
 	protected.Use(middleware.AuthMiddleware())
 	{
 		protected.GET("/users", userHandler.GetAllUsers)
+		protected.PUT("/users/:id/block", userHandler.BlockUser)
 	}
 
 	port := os.Getenv("PORT")

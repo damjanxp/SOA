@@ -24,7 +24,13 @@
           <td>{{ user.role }}</td>
           <td>
             <span *ngIf="user.isBlocked" class="badge blocked">DA</span>
-            <span *ngIf="!user.isBlocked" class="badge active">NE</span>
+
+            <ng-container *ngIf="!user.isBlocked && user.role !== 'admin'">
+              <span class="badge active">NE</span>
+              <button class="block-btn" (click)="blockUser(user)">
+                BLOKIRAJ
+              </button>
+            </ng-container>
           </td>
         </tr>
       </tbody>
