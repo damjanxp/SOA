@@ -12,6 +12,18 @@ const MONGO_URI = process.env.MONGO_URI || "mongodb://localhost:27017/blogdb";
 // Parse JSON request bodies
 app.use(express.json());
 
+// Basic CORS support for local frontend
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "http://localhost:4200");
+  res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.header("Vary", "Origin");
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(204);
+  }
+  next();
+});
+
 // Mount blog routes
 app.use("/api/blogs", blogRoutes);
 

@@ -34,6 +34,7 @@ func main() {
 	userRepo := repository.NewUserRepository(db)
 	authHandler := handlers.NewAuthHandler(userRepo)
 	userHandler := handlers.NewUserHandler(userRepo)
+	profileHandler := handlers.NewProfileHandler(userRepo)
 
 	r := gin.Default()
 
@@ -64,6 +65,8 @@ func main() {
 		protected.GET("/users", userHandler.GetAllUsers)
 		protected.PUT("/users/:id/block", userHandler.BlockUser)
 		protected.GET("/profile/me", userHandler.GetMyProfile)
+		protected.GET("/users/:id/profile", profileHandler.GetProfile)
+		protected.PUT("/users/:id/profile", profileHandler.UpdateProfile)
 	}
 
 	port := os.Getenv("PORT")

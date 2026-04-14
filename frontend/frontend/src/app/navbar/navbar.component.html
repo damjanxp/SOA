@@ -3,7 +3,12 @@
     <h1 class="navbar-title">Tourism App</h1>
 
     <div class="nav-actions" *ngIf="authService.isLoggedIn()">
-      <button class="logout-btn" routerLink="/profile">Moj profil</button>
+      <div class="nav-links">
+        <a routerLink="/blogs">Blogs</a>
+        <a routerLink="/blogs/new">Create blog</a>
+        <a routerLink="/profile">Moj profil</a>
+        <a *ngIf="authService.getRole() === 'admin'" routerLink="/users">Korisnici</a>
+      </div>
 
       <button class="logout-btn" (click)="logout()">Odjava</button>
     </div>

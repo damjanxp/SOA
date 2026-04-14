@@ -1,0 +1,63 @@
+<section class="blog-detail-container" *ngIf="!loading && blog as blog">
+  <div class="blog-header">
+    <div>
+      <h2>{{ blog.title }}</h2>
+      <div class="blog-tags">
+        <span class="tag">{{ blog.likeCount || 0 }} likes</span>
+      </div>
+    </div>
+    <button type="button" class="ghost" (click)="toggleLike()">
+      {{ isLiked ? 'Unlike' : 'Like' }}
+    </button>
+  </div>
+
+  <div class="blog-images" *ngIf="blog.images?.length">
+    <img *ngFor="let image of blog.images" [src]="image" alt="Blog image" />
+  </div>
+
+  <article class="blog-body" [innerHTML]="renderedDescription"></article>
+
+  <section class="comment-section">
+    <h3>Comments</h3>
+
+    <div class="comment-list" *ngIf="blog.comments?.length">
+      <div class="comment-card" *ngFor="let comment of blog.comments">
+        <div class="comment-header">
+          <div>
+            <strong>{{ comment.username || 'Anonymous' }}</strong>
+            <span>{{ formatDate(comment.createdAt) }}</span>
+          </div>
+          <button
+            *ngIf="isOwnComment(comment)"
+            type="button"
+            class="ghost"
+            (click)="startEdit(comment)"
+          >
+            Edit
+          </button>
+        </div>
+
+        <p *ngIf="editingCommentId !== comment.id">{{ comment.text }}</p>
+
+        <div class="comment-edit" *ngIf="editingCommentId === comment.id">
+          <textarea [(ngModel)]="editingText"></textarea>
+          <div class="comment-actions">
+            <button type="button" (click)="updateComment(comment)">Save</button>
+            <button type="button" class="ghost" (click)="cancelEdit()">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="status-card" *ngIf="!blog.comments?.length">No comments yet.</div>
+
+    <div class="comment-form">
+      <label for="commentText">Add a comment</label>
+      <textarea id="commentText" rows="4" [(ngModel)]="commentText" placeholder="Share your thoughts..."></textarea>
+      <button type="button" (click)="submitComment()">Submit</button>
+    </div>
+  </section>
+</section>
+
+<div *ngIf="loading" class="status-card">Loading blog...</div>
+<div *ngIf="error && !loading" class="error">{{ error }}</div>

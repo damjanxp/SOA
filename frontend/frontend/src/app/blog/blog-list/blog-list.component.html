@@ -1,0 +1,48 @@
+<section class="blog-list-container">
+  <header class="page-header">
+    <div>
+      <h2>Tourism Blogs</h2>
+      <p>Discover stories, tips, and travel inspiration.</p>
+    </div>
+    <a class="primary-link" routerLink="/blogs/new">Create blog</a>
+  </header>
+
+  <div *ngIf="loading" class="status-card">Loading blogs...</div>
+  <div *ngIf="error && !loading" class="error">{{ error }}</div>
+
+  <div class="blog-grid" *ngIf="!loading && blogs.length > 0">
+    <article class="blog-card" *ngFor="let blog of blogs" (click)="goToBlog(blog)">
+      <img
+        *ngIf="blog.images?.length"
+        class="blog-thumb"
+        [src]="blog.images?.[0]"
+        alt="Blog image"
+      />
+      <div class="blog-card-header">
+        <h3>{{ blog.title }}</h3>
+        <span class="tag">{{ blog.likeCount || 0 }} likes</span>
+      </div>
+      <div class="blog-meta">
+        <span>{{ blog.author || blog.authorId || 'Unknown author' }}</span>
+        <span>{{ formatDate(blog.createdAt) }}</span>
+      </div>
+      <div class="blog-card-footer">
+        <span>Read more</span>
+      </div>
+    </article>
+  </div>
+
+  <div *ngIf="!loading && blogs.length === 0 && !error" class="status-card">
+    No blogs found.
+  </div>
+
+  <div class="pagination" *ngIf="!loading && totalPages > 1">
+    <button type="button" class="ghost" (click)="previousPage()" [disabled]="page === 1">
+      Previous
+    </button>
+    <span>Page {{ page }} of {{ totalPages }}</span>
+    <button type="button" class="ghost" (click)="nextPage()" [disabled]="page === totalPages">
+      Next
+    </button>
+  </div>
+</section>

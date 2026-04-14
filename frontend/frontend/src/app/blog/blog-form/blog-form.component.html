@@ -1,0 +1,42 @@
+<section class="blog-form-container">
+  <header class="page-header">
+    <div>
+      <h2>Create Blog</h2>
+      <p>Share your travel story or tips with the community.</p>
+    </div>
+    <a class="ghost-link" routerLink="/blogs">Back to blogs</a>
+  </header>
+
+  <div class="form-card">
+    <div *ngIf="error" class="error">{{ error }}</div>
+    <div *ngIf="success" class="success">{{ success }}</div>
+
+    <div class="form-field">
+      <label for="title">Title</label>
+      <input id="title" type="text" [(ngModel)]="title" placeholder="Blog title" />
+    </div>
+
+    <div class="form-field">
+      <label for="description">Description (Markdown supported)</label>
+      <textarea
+        id="description"
+        rows="8"
+        [(ngModel)]="description"
+        placeholder="Write your blog content..."
+      ></textarea>
+    </div>
+
+    <div class="form-field">
+      <label>Images (optional)</label>
+      <div class="image-field" *ngFor="let img of images; let i = index">
+        <input type="text" [(ngModel)]="images[i]" placeholder="Image URL" />
+        <button type="button" class="ghost" (click)="removeImageField(i)">Remove</button>
+      </div>
+      <button type="button" class="ghost" (click)="addImageField()">Add another image</button>
+    </div>
+
+    <button type="button" (click)="submit()" [disabled]="loading">
+      {{ loading ? 'Submitting...' : 'Create blog' }}
+    </button>
+  </div>
+</section>

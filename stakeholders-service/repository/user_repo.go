@@ -57,3 +57,14 @@ func (r *UserRepository) GetProfileByUserID(userID string) (*models.Profile, err
 	result := r.DB.Where("user_id = ?", userID).First(&profile)
 	return &profile, result.Error
 }
+
+func (r *UserRepository) UpdateProfileByUserID(userID string, updates map[string]interface{}) error {
+	result := r.DB.Model(&models.Profile{}).Where("user_id = ?", userID).Updates(updates)
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+	return nil
+}

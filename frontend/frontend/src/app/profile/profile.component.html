@@ -1,7 +1,8 @@
 <div class="profile-container">
   <div *ngIf="loading">Učitavanje...</div>
 
-  <div *ngIf="error && !loading">{{ error }}</div>
+  <div *ngIf="error && !loading" class="error">{{ error }}</div>
+  <div *ngIf="success && !loading" class="success">{{ success }}</div>
 
   <div *ngIf="profile && !loading" class="profile-card">
     <!-- SLIKA -->
@@ -11,14 +12,45 @@
     <h2>{{ profile.username }}</h2>
     <p class="email">{{ profile.email }}</p>
 
+    <div class="profile-actions" *ngIf="!isEditing">
+      <button type="button" (click)="startEdit()">Izmeni profil</button>
+    </div>
+
     <hr />
 
     <!-- DETALJI -->
-    <div class="info">
+    <div class="info" *ngIf="!isEditing">
       <p><b>Ime:</b> {{ profile.firstName || "" }}</p>
       <p><b>Prezime:</b> {{ profile.lastName || "" }}</p>
       <p><b>Bio:</b> {{ profile.bio || "" }}</p>
       <p><b>Moto:</b> "{{ profile.motto || "" }}"</p>
     </div>
+
+    <form class="profile-form" *ngIf="isEditing" (ngSubmit)="saveProfile()">
+      <div>
+        <label>Ime</label>
+        <input type="text" [(ngModel)]="form.firstName" name="firstName" />
+      </div>
+      <div>
+        <label>Prezime</label>
+        <input type="text" [(ngModel)]="form.lastName" name="lastName" />
+      </div>
+      <div>
+        <label>Profilna slika (URL)</label>
+        <input type="text" [(ngModel)]="form.profileImageUrl" name="profileImageUrl" />
+      </div>
+      <div>
+        <label>Bio</label>
+        <textarea rows="4" [(ngModel)]="form.bio" name="bio"></textarea>
+      </div>
+      <div>
+        <label>Moto</label>
+        <input type="text" [(ngModel)]="form.motto" name="motto" />
+      </div>
+      <div class="form-actions">
+        <button type="submit">Sačuvaj</button>
+        <button type="button" class="ghost" (click)="cancelEdit()">Otkaži</button>
+      </div>
+    </form>
   </div>
 </div>
