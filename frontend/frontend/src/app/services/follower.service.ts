@@ -1,12 +1,18 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 
 export interface Recommendation {
   userId: string;
   username: string;
   mutualCount: number;
+}
+
+export interface UserEntry {
+  userId: string;
+  username: string;
 }
 
 @Injectable({
@@ -36,4 +42,24 @@ export class FollowerService {
       `${this.apiBase}/api/followers/${userId}/recommendations`
     );
   }
+
+  getFollowing(userId: string): Observable<UserEntry[]> {
+    return this.http.get<UserEntry[]>(
+      `${this.apiBase}/api/followers/${userId}/following`
+    );
+  }
+
+  getFollowers(userId: string): Observable<UserEntry[]> {
+    return this.http.get<UserEntry[]>(
+      `${this.apiBase}/api/followers/${userId}/followers`
+    );
+  }
+
+  /** Fetches username for a userId from stakeholders service */
+  getUserInfo(userId: string): Observable<{ id: string; username: string }> {
+    return this.http.get<{ id: string; username: string }>(
+      `${this.apiBase}/api/users/${userId}`
+    ).pipe(catchError(() => of({ id: userId, username: userId })));
+  }
 }
+

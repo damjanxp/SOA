@@ -12,6 +12,35 @@
     <h2>{{ profile.username }}</h2>
     <p class="email">{{ profile.email }}</p>
 
+    <!-- SOCIAL COUNTERS -->
+    <div class="social-stats">
+      <button class="stat-btn" (click)="toggleFollowingList()">
+        <strong>{{ following.length }}</strong> Pratim
+      </button>
+      <button class="stat-btn" (click)="toggleFollowersList()">
+        <strong>{{ followers.length }}</strong> Pratilaca
+      </button>
+    </div>
+
+    <!-- LISTA: PRATIM -->
+    <div class="social-list" *ngIf="showFollowing">
+      <h4>Pratim</h4>
+      <div *ngIf="following.length === 0" class="empty-list">Ne pratiš nijednog korisnika.</div>
+      <div class="social-item" *ngFor="let u of following">
+        <span>{{ u.username }}</span>
+        <button class="ghost small" (click)="unfollow(u.userId)">Otprati</button>
+      </div>
+    </div>
+
+    <!-- LISTA: PRATIOCI -->
+    <div class="social-list" *ngIf="showFollowers">
+      <h4>Pratioci</h4>
+      <div *ngIf="followers.length === 0" class="empty-list">Nema pratilaca.</div>
+      <div class="social-item" *ngFor="let u of followers">
+        <span>{{ u.username }}</span>
+      </div>
+    </div>
+
     <div class="profile-actions" *ngIf="!isEditing">
       <button type="button" (click)="startEdit()">Izmeni profil</button>
     </div>
@@ -52,5 +81,14 @@
         <button type="button" class="ghost" (click)="cancelEdit()">Otkaži</button>
       </div>
     </form>
+  </div>
+
+  <!-- PREPORUČENI KORISNICI -->
+  <div class="recommendations-card" *ngIf="recommendations.length > 0 && !loading">
+    <h3>Možda poznaješ</h3>
+    <div class="social-item" *ngFor="let r of recommendations">
+      <span>{{ r.username }} <small>({{ r.mutualCount }} zajednički)</small></span>
+      <button class="small" (click)="follow(r.userId, r.username)">Prati</button>
+    </div>
   </div>
 </div>

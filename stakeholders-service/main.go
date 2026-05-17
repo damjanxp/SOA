@@ -63,6 +63,7 @@ func main() {
 	protected.Use(middleware.AuthMiddleware())
 	{
 		protected.GET("/users", userHandler.GetAllUsers)
+		protected.GET("/users/:id", userHandler.GetUserById)
 		protected.PUT("/users/:id/block", userHandler.BlockUser)
 		protected.GET("/profile/me", userHandler.GetMyProfile)
 		protected.GET("/users/:id/profile", profileHandler.GetProfile)

@@ -81,8 +81,31 @@ func ReverseProxy(targetURL string) gin.HandlerFunc {
 	}
 }
 
+// corsMiddleware sets CORS headers and short-circuits OPTIONS preflight requests.
+func corsMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Header("Access-Control-Allow-Origin", "*")
+		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
+		c.Header("Access-Control-Allow-Headers", "Origin, Content-Type, Authorization, X-User-Id, X-User-Role")
+
+		if c.Request.Method == http.MethodOptions {
+			c.AbortWithStatus(http.StatusNoContent)
+			return
+		}
+		c.Next()
+	}
+}
+
 // SetupRouter configures all gateway routes on the provided Gin engine.
 func SetupRouter(r *gin.Engine) {
+	// Disable automatic redirect for trailing slashes — prevents Authorization header being
+	// dropped when e.g. /api/blogs is redirected to /api/blogs/ by Gin.
+	r.RedirectTrailingSlash = false
+	r.RedirectFixedPath = false
+
+	// Apply CORS globally before any auth middleware so OPTIONS preflight passes
+	r.Use(corsMiddleware())
+
 	stakeholdersURL := os.Getenv("STAKEHOLDERS_SERVICE_URL")
 	blogURL := os.Getenv("BLOG_SERVICE_URL")
 	followerURL := os.Getenv("FOLLOWER_SERVICE_URL")
@@ -102,17 +125,22 @@ func SetupRouter(r *gin.Engine) {
 	// Protected routes — require valid JWT
 	protected := r.Group("/api", middleware.AuthMiddleware())
 	{
-		// Stakeholders service
+		// Stakeholders service — match both /users and /users/...
+		protected.Any("/users", ReverseProxy(stakeholdersURL))
 		protected.Any("/users/*path", ReverseProxy(stakeholdersURL))
+		protected.Any("/profile", ReverseProxy(stakeholdersURL))
 		protected.Any("/profile/*path", ReverseProxy(stakeholdersURL))
 
 		// Follower service
+		protected.Any("/followers", ReverseProxy(followerURL))
 		protected.Any("/followers/*path", ReverseProxy(followerURL))
 
 		// Blog service
+		protected.Any("/blogs", ReverseProxy(blogURL))
 		protected.Any("/blogs/*path", ReverseProxy(blogURL))
 
 		// Tour service
+		protected.Any("/tours", ReverseProxy(tourURL))
 		protected.Any("/tours/*path", ReverseProxy(tourURL))
 	}
 }

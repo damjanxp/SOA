@@ -27,6 +27,35 @@
     gap: 10px;
   }
 
+  .blog-meta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .author-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.9rem;
+    color: #4b5563;
+  }
+
+  .follow-btn {
+    font-size: 0.82rem;
+    padding: 3px 12px;
+    border-radius: 20px;
+    border: 1.5px solid #1a237e;
+    background: transparent;
+    color: #1a237e;
+    cursor: pointer;
+    transition: all 0.2s;
+    &:hover { background: #1a237e; color: #fff; }
+    &.following { background: #1a237e; color: #fff; }
+    &:disabled { opacity: 0.5; cursor: default; }
+  }
+
   .tag {
     background: rgba(0, 137, 123, 0.12);
     color: #0f766e;

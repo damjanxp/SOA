@@ -1,9 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { marked } from 'marked';
 import { environment } from '../../../environments/environment';
+import { FollowerService } from '../../services/follower.service';
 
 interface BlogComment {
   id: string;
@@ -25,6 +26,8 @@ interface BlogDetail {
   likeCount?: number;
   comments?: BlogComment[];
   liked?: boolean;
+  authorId?: string;
+  authorUsername?: string;
 }
 
 @Component({
@@ -47,11 +50,15 @@ export class BlogDetailComponent implements OnInit {
 
   currentUserId = '';
   isLiked = false;
+  isFollowingAuthor = false;
+  followLoading = false;
 
   constructor(
     private http: HttpClient,
     private route: ActivatedRoute,
+    private router: Router,
     private sanitizer: DomSanitizer,
+    private followerService: FollowerService,
   ) {}
 
   ngOnInit(): void {
@@ -88,6 +95,23 @@ export class BlogDetailComponent implements OnInit {
         this.renderedDescription = this.sanitizer.bypassSecurityTrustHtml(
           marked.parse(this.blog?.description || '') as string
         );
+        // Check if current user follows the author
+        const authorId = this.blog.authorId;
+        if (authorId && authorId !== this.currentUserId) {
+          this.followerService.isFollowing(authorId).subscribe({
+            next: (res) => { this.isFollowingAuthor = res.isFollowing; },
+            error: () => {}
+          });
+        }
+        // Fetch author's username from stakeholders
+        if (authorId) {
+          this.followerService.getUserInfo(authorId).subscribe({
+            next: (info) => {
+              if (this.blog) this.blog = { ...this.blog, authorUsername: info.username };
+            },
+            error: () => {}
+          });
+        }
         if (!silent) {
           this.loading = false;
         }
@@ -101,8 +125,23 @@ export class BlogDetailComponent implements OnInit {
     });
   }
 
-  toggleLike(): void {
-    if (!this.blog) {
+  toggleFollowAuthor(): void {
+    const authorId = this.blog?.authorId;
+    if (!authorId || this.followLoading) return;
+    this.followLoading = true;
+    const req = this.isFollowingAuthor
+      ? this.followerService.unfollow(authorId)
+      : this.followerService.follow(authorId);
+    req.subscribe({
+      next: () => {
+        this.isFollowingAuthor = !this.isFollowingAuthor;
+        this.followLoading = false;
+      },
+      error: () => { this.followLoading = false; }
+    });
+  }
+
+  toggleLike(): void {    if (!this.blog) {
       return;
     }
 

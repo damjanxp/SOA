@@ -13,7 +13,7 @@
 
     <div class="form-field">
       <label for="title">Title</label>
-      <input id="title" type="text" [(ngModel)]="title" placeholder="Blog title" />
+      <input id="title" type="text" [(ngModel)]="title" placeholder="Blog title"/>
     </div>
 
     <div class="form-field">
@@ -29,7 +29,7 @@
     <div class="form-field">
       <label>Images (optional)</label>
       <div class="image-field" *ngFor="let img of images; let i = index">
-        <input type="text" [(ngModel)]="images[i]" placeholder="Image URL" />
+        <input type="text" [(ngModel)]="images[i]" placeholder="Image URL"/>
         <button type="button" class="ghost" (click)="removeImageField(i)">Remove</button>
       </div>
       <button type="button" class="ghost" (click)="addImageField()">Add another image</button>
