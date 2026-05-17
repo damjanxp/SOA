@@ -1,0 +1,89 @@
+<div class="tour-form-container">
+  <div class="form-header">
+    <h1>{{ isEditMode ? 'Uredi turu' : 'Nova tura' }}</h1>
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger">
+    {{ error }}
+  </div>
+
+  <div class="form-wrapper">
+    <form [formGroup]="tourForm" (ngSubmit)="onSubmit()" class="tour-form">
+      
+      <div class="form-group">
+        <label for="name">Naziv ture *</label>
+        <input 
+          type="text" 
+          id="name" 
+          formControlName="name" 
+          class="form-control"
+          placeholder="Unesite naziv ture"
+        >
+        <div *ngIf="name?.invalid && name?.touched" class="error-message">
+          <small *ngIf="name?.errors?.['required']">Naziv je obavezan</small>
+          <small *ngIf="name?.errors?.['minlength']">Naziv mora imati najmanje 3 karaktera</small>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="description">Opis *</label>
+        <textarea 
+          id="description" 
+          formControlName="description" 
+          class="form-control"
+          rows="5"
+          placeholder="Detaljni opis ture"
+        ></textarea>
+        <div *ngIf="description?.invalid && description?.touched" class="error-message">
+          <small *ngIf="description?.errors?.['required']">Opis je obavezan</small>
+          <small *ngIf="description?.errors?.['minlength']">Opis mora imati najmanje 10 karaktera</small>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="difficulty">Težina *</label>
+          <select id="difficulty" formControlName="difficulty" class="form-control">
+            <option *ngFor="let diff of difficulties" [value]="diff">{{ diff }}</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="lengthKm">Dužina (km) *</label>
+          <input 
+            type="number" 
+            id="lengthKm" 
+            formControlName="lengthKm" 
+            class="form-control"
+            placeholder="0"
+          >
+          <div *ngIf="lengthKm?.invalid && lengthKm?.touched" class="error-message">
+            <small *ngIf="lengthKm?.errors?.['required']">Dužina je obavezna</small>
+            <small *ngIf="lengthKm?.errors?.['min']">Dužina ne može biti negativna</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="tags">Tagovi (odvojeni zarezima)</label>
+        <input 
+          type="text" 
+          id="tags" 
+          formControlName="tags" 
+          class="form-control"
+          placeholder="npr: planinstvo, priroda, avantura"
+        >
+        <small class="text-muted">Tagovi su odvojeni zarezima</small>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary" [disabled]="loading || tourForm.invalid">
+          {{ loading ? 'Čuvanje...' : (isEditMode ? 'Ažuriraj' : 'Kreiraj') }}
+        </button>
+        <button type="button" class="btn btn-secondary" (click)="cancel()">
+          Otkaži
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

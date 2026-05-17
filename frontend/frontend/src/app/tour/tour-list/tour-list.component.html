@@ -1,0 +1,62 @@
+<div class="tour-list-container">
+  <div class="header">
+    <h1>Moje Ture</h1>
+    <button class="btn btn-primary" (click)="createNewTour()">+ Nova tura</button>
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger">
+    {{ error }}
+  </div>
+
+  <div *ngIf="loading" class="loading">
+    Učitavanje...
+  </div>
+
+  <div *ngIf="!loading && tours.length === 0" class="empty-state">
+    <p>Nemate kreiranih tura. Kreirajte prvu turu!</p>
+  </div>
+
+  <div *ngIf="!loading && tours.length > 0" class="tours-grid">
+    <div *ngFor="let tour of tours" class="tour-card">
+      <div class="tour-header">
+        <h3>{{ tour.name }}</h3>
+        <span [ngClass]="'status ' + getStatusBadge(tour.status)">{{ tour.status }}</span>
+      </div>
+
+      <p class="tour-description">{{ tour.description }}</p>
+
+      <div class="tour-meta">
+        <span class="meta-item">
+          <strong>Težina:</strong> {{ tour.difficulty }}
+        </span>
+        <span class="meta-item">
+          <strong>Dužina:</strong> {{ tour.lengthKm }} km
+        </span>
+        <span class="meta-item">
+          <strong>Cena:</strong> {{ tour.price }} $
+        </span>
+      </div>
+
+      <div class="tour-tags" *ngIf="tour.tags && tour.tags.length > 0">
+        <span *ngFor="let tag of tour.tags" class="tag">{{ tag }}</span>
+      </div>
+
+      <div class="tour-keypoints">
+        <small><strong>Ključne tačke:</strong> {{ tour.keypoints?.length || 0 }}</small>
+      </div>
+
+      <div class="tour-actions">
+        <button class="btn btn-sm btn-info" (click)="viewTour(tour.id!)">Pregled</button>
+        <button class="btn btn-sm btn-warning" (click)="editTour(tour.id!)" 
+                [disabled]="tour.status === 'PUBLISHED'">
+          Uredi
+        </button>
+        <button class="btn btn-sm btn-success" (click)="publishTour(tour.id!)"
+                *ngIf="tour.status === 'DRAFT'">
+          Objavi
+        </button>
+        <button class="btn btn-sm btn-danger" (click)="deleteTour(tour.id!)">Obriši</button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,147 @@
+<div class="keypoints-container">
+  <div class="header">
+    <button class="btn-back" (click)="back()">← Nazad</button>
+    <h1>Upravljanje ključnim tačkama</h1>
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger">
+    {{ error }}
+  </div>
+
+  <div *ngIf="loading" class="loading">
+    Učitavanje...
+  </div>
+
+  <div class="content">
+    <div class="map-section">
+  <h2>Klikni na mapu da odabereš lokaciju</h2>
+  <div id="keypoint-map" style="height: 400px; border-radius: 8px;"></div>
+  <div *ngIf="selectedLat" class="selected-coords">
+    Odabrano: {{ selectedLat | number:'1.6-6' }}, {{ selectedLon | number:'1.6-6' }}
+  </div>
+</div>
+    <div class="form-section">
+      <h2>{{ editingId ? 'Uredi ključnu tačku' : 'Dodaj novu ključnu tačku' }}</h2>
+      
+      <form [formGroup]="keypointForm" (ngSubmit)="onSubmit()" class="keypoint-form">
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="lat">Geografska širina (Latitude) *</label>
+            <input 
+              type="number" 
+              id="lat" 
+              formControlName="lat" 
+              class="form-control"
+              step="0.000001"
+              placeholder="npr: 44.8176"
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="lon">Geografska dužina (Longitude) *</label>
+            <input 
+              type="number" 
+              id="lon" 
+              formControlName="lon" 
+              class="form-control"
+              step="0.000001"
+              placeholder="npr: 20.4489"
+            >
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="name">Naziv *</label>
+          <input 
+            type="text" 
+            id="name" 
+            formControlName="name" 
+            class="form-control"
+            placeholder="npr: Kula Despot Stefan, Muzej..."
+          >
+          <div *ngIf="keypointForm.get('name')?.invalid && keypointForm.get('name')?.touched" 
+               class="error-message">
+            <small>Naziv je obavezan i mora imati najmanje 3 karaktera</small>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="description">Opis *</label>
+          <textarea 
+            id="description" 
+            formControlName="description" 
+            class="form-control"
+            rows="4"
+            placeholder="Detaljni opis ključne tačke..."
+          ></textarea>
+          <div *ngIf="keypointForm.get('description')?.invalid && keypointForm.get('description')?.touched" 
+               class="error-message">
+            <small>Opis je obavezan</small>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="imageUrl">URL slike</label>
+            <input 
+              type="url" 
+              id="imageUrl" 
+              formControlName="imageUrl" 
+              class="form-control"
+              placeholder="https://..."
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="orderIndex">Redosled *</label>
+            <input 
+              type="number" 
+              id="orderIndex" 
+              formControlName="orderIndex" 
+              class="form-control"
+              min="0"
+            >
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" [disabled]="keypointForm.invalid">
+            {{ editingId ? 'Ažuriraj' : 'Dodaj' }}
+          </button>
+          <button type="button" class="btn btn-secondary" (click)="cancelEdit()" *ngIf="editingId">
+            Otkaži
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <div class="keypoints-section">
+      <h2>Ključne tačke ({{ keypoints.length }})</h2>
+
+      <div *ngIf="keypoints.length === 0" class="empty-message">
+        Nema dodanih ključnih tačaka
+      </div>
+
+      <div *ngIf="keypoints.length > 0" class="keypoints-list">
+        <div *ngFor="let kp of keypoints" class="keypoint-card">
+          <div class="kp-order">{{ kp.orderIndex }}</div>
+          
+          <div class="kp-info">
+            <h4>{{ kp.name }}</h4>
+            <p>{{ kp.description }}</p>
+            <div class="kp-meta">
+              <span>📍 {{ kp.lat }}, {{ kp.lon }}</span>
+              <span *ngIf="kp.imageUrl">🖼️ Ima sliku</span>
+            </div>
+          </div>
+
+          <div class="kp-actions">
+            <button class="btn btn-sm btn-warning" (click)="editKeypoint(kp)">Uredi</button>
+            <button class="btn btn-sm btn-danger" (click)="deleteKeypoint(kp.id)">Obriši</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

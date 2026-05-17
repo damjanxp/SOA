@@ -1,11 +1,26 @@
-FROM golang:1.22-alpine AS builder
-WORKDIR /app
-COPY main.go .
-RUN go mod init github.com/tim/tour-service
-RUN go build -o main .
+# Multi-stage build for Spring Boot Tour Service
+# Stage 1: Build stage
+FROM maven:3.9-eclipse-temurin-21 AS builder
 
-FROM alpine:latest
+WORKDIR /build
+
+# Copy pom.xml and source code
+COPY pom.xml .
+COPY src ./src
+
+# Build the application (skip tests for faster build)
+RUN mvn package -DskipTests -q
+
+# Stage 2: Runtime stage
+FROM eclipse-temurin:21-jre
+
 WORKDIR /app
-COPY --from=builder /app/main .
+
+# Copy jar from builder stage
+COPY --from=builder /build/target/tour-service-*.jar app.jar
+
+# Expose port
 EXPOSE 8083
-CMD ["./main"]
+
+# Run the application
+ENTRYPOINT ["java", "-jar", "app.jar"]

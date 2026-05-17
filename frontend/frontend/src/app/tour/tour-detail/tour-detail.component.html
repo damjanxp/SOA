@@ -1,0 +1,69 @@
+<div class="tour-detail-container" *ngIf="tour; else loadingTpl">
+
+  <div class="header">
+    <button class="btn-back" (click)="back()">← Nazad</button>
+
+    <div>
+      <h1>{{ tour.name }}</h1>
+      <span class="status" [ngClass]="getStatusClass(tour.status)">
+        {{ tour.status }}
+      </span>
+    </div>
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger">
+    {{ error }}
+  </div>
+
+  <div class="tour-info">
+    <p>{{ tour.description }}</p>
+
+    <div class="meta">
+      <span>Težina: {{ tour.difficulty }}</span>
+      <span>Dužina: {{ tour.lengthKm }} km</span>
+      <span>Cena: {{ tour.price }} $</span>
+    </div>
+
+    <div class="actions">
+      <button (click)="editTour()">Uredi</button>
+      <button (click)="manageKeypoints()">Ključne tačke</button>
+      <button (click)="manageReviews()">Recenzije</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button (click)="setActiveTab('keypoints')" [class.active]="activeTab==='keypoints'">
+      Keypoints
+    </button>
+    <button (click)="setActiveTab('reviews')" [class.active]="activeTab==='reviews'">
+      Reviews
+    </button>
+  </div>
+
+  <div class="tab-content">
+
+    <div *ngIf="activeTab === 'keypoints'">
+      <h3>Ključne tačke</h3>
+
+      <div *ngIf="keypoints.length === 0">
+        Nema ključnih tačaka
+      </div>
+
+      <div *ngFor="let kp of keypoints" class="keypoint">
+        <strong>{{ kp.orderIndex }}.</strong>
+        {{ kp.name }} - {{ kp.description }}
+        <div class="coords">{{ kp.lat }}, {{ kp.lon }}</div>
+      </div>
+    </div>
+
+    <div *ngIf="activeTab === 'reviews'">
+      <h3>Recenzije</h3>
+      <p>Ovo će doći iz API-ja</p>
+    </div>
+
+  </div>
+</div>
+
+<ng-template #loadingTpl>
+  <div class="loading" *ngIf="loading">Učitavanje...</div>
+</ng-template>

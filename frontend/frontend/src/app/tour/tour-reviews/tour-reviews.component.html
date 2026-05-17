@@ -1,0 +1,131 @@
+<div class="reviews-container">
+  <div class="header">
+    <button class="btn-back" (click)="back()">← Nazad</button>
+    <h1>Recenzije ture</h1>
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger">
+    {{ error }}
+  </div>
+
+  <div *ngIf="success" class="alert alert-success">
+    {{ success }}
+  </div>
+
+  <div *ngIf="loading" class="loading">
+    Učitavanje...
+  </div>
+
+  <div class="content">
+    <div class="form-section">
+      <h2>Ostavi recenziju</h2>
+      
+      <form [formGroup]="reviewForm" (ngSubmit)="onSubmit()" class="review-form">
+        
+        <div class="form-group">
+          <label for="rating">Ocena (1-5) *</label>
+          <div class="rating-input">
+            <select id="rating" formControlName="rating" class="form-control">
+              <option value="1">1 ★ - Loša</option>
+              <option value="2">2 ★★ - Zadovoljavajuća</option>
+              <option value="3">3 ★★★ - Dobra</option>
+              <option value="4">4 ★★★★ - Odličan</option>
+              <option value="5">5 ★★★★★ - Odličan!</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="comment">Komentar *</label>
+          <textarea 
+            id="comment" 
+            formControlName="comment" 
+            class="form-control"
+            rows="5"
+            placeholder="Podelite svoje iskustvo sa ovom turom..."
+          ></textarea>
+          <div *ngIf="reviewForm.get('comment')?.invalid && reviewForm.get('comment')?.touched" 
+               class="error-message">
+            <small>Komentar je obavezan</small>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="visitDate">Datum posete ture *</label>
+          <input 
+            type="date" 
+            id="visitDate" 
+            formControlName="visitDate" 
+            class="form-control"
+          >
+          <div *ngIf="reviewForm.get('visitDate')?.invalid && reviewForm.get('visitDate')?.touched" 
+               class="error-message">
+            <small>Datum posete je obavezan</small>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="images">URL slike (odvojene zarezima)</label>
+          <input 
+            type="text" 
+            id="images" 
+            formControlName="images" 
+            class="form-control"
+            placeholder="https://..., https://..."
+          >
+          <small class="text-muted">Unesite URL-ove odvojene zarezima</small>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" [disabled]="reviewForm.invalid">
+            Pošalji recenziju
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <div class="reviews-section">
+      <h2>Recenzije ({{ reviews.length }})</h2>
+
+      <div *ngIf="reviews.length === 0" class="empty-message">
+        Nema recenzija za ovu turu
+      </div>
+
+      <div *ngIf="reviews.length > 0" class="reviews-list">
+        <div *ngFor="let review of reviews" class="review-card">
+          
+          <div class="review-header">
+            <div class="review-rating">
+              <span *ngFor="let star of getRatingStars(review.rating)" class="star">{{ star }}</span>
+              <span class="rating-value">({{ review.rating }}/5)</span>
+            </div>
+            <small class="review-date">{{ review.createdAt | date: 'dd.MM.yyyy HH:mm' }}</small>
+          </div>
+
+          <div class="review-meta">
+            <small>
+              <strong>Posetio/la:</strong> {{ review.visitDate | date: 'dd.MM.yyyy' }}
+            </small>
+          </div>
+
+          <p class="review-comment">{{ review.comment }}</p>
+
+          <div *ngIf="review.images && review.images.length > 0" class="review-images">
+            <strong>Slike:</strong>
+            <div class="images-list">
+              <a *ngFor="let img of review.images" [href]="img" target="_blank" class="image-link">
+                🖼️ Slika
+              </a>
+            </div>
+          </div>
+
+          <div class="review-actions">
+            <button class="btn btn-sm btn-danger" (click)="deleteReview(review.id)">
+              Obriši
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
