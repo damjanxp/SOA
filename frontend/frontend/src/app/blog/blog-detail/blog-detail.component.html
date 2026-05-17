@@ -2,8 +2,21 @@
   <div class="blog-header">
     <div>
       <h2>{{ blog.title }}</h2>
-      <div class="blog-tags">
+      <div class="blog-meta">
         <span class="tag">{{ blog.likeCount || 0 }} likes</span>
+        <span class="author-row" *ngIf="blog.authorId">
+          <span class="author-label">Autor: <strong>{{ blog.authorUsername || blog.authorId }}</strong></span>
+          <button
+            *ngIf="blog.authorId !== currentUserId"
+            type="button"
+            class="follow-btn"
+            [class.following]="isFollowingAuthor"
+            [disabled]="followLoading"
+            (click)="toggleFollowAuthor()"
+          >
+            {{ isFollowingAuthor ? 'Otprati' : 'Prati' }}
+          </button>
+        </span>
       </div>
     </div>
     <button type="button" class="ghost" (click)="toggleLike()">

@@ -1,9 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { ActivatedRoute } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+import { ActivatedRoute, Router } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { marked } from 'marked';
-import { AuthService } from '../../auth/auth.service';
+import { environment } from '../../../environments/environment';
+import { FollowerService } from '../../services/follower.service';
 
 interface BlogComment {
   id: string;
@@ -25,6 +26,8 @@ interface BlogDetail {
   likeCount?: number;
   comments?: BlogComment[];
   liked?: boolean;
+  authorId?: string;
+  authorUsername?: string;
 }
 
 @Component({
@@ -33,7 +36,7 @@ interface BlogDetail {
   styleUrls: ['./blog-detail.component.scss']
 })
 export class BlogDetailComponent implements OnInit {
-  private readonly apiBase = 'http://localhost:8082/api';
+  private readonly apiBase = environment.apiBase + '/api';
 
   blog?: BlogDetail;
   renderedDescription: SafeHtml = '';
@@ -47,12 +50,15 @@ export class BlogDetailComponent implements OnInit {
 
   currentUserId = '';
   isLiked = false;
+  isFollowingAuthor = false;
+  followLoading = false;
 
   constructor(
     private http: HttpClient,
     private route: ActivatedRoute,
+    private router: Router,
     private sanitizer: DomSanitizer,
-    private authService: AuthService
+    private followerService: FollowerService,
   ) {}
 
   ngOnInit(): void {
@@ -72,14 +78,7 @@ export class BlogDetailComponent implements OnInit {
     }
     this.error = '';
 
-    const headers = this.buildAuthHeaders();
-    if (!headers) {
-      this.error = 'No token found';
-      this.loading = false;
-      return;
-    }
-
-    this.http.get<{ data: BlogDetail }>(`${this.apiBase}/blogs/${blogId}`, { headers }).subscribe({
+    this.http.get<{ data: BlogDetail }>(`${this.apiBase}/blogs/${blogId}`).subscribe({
       next: (response) => {
         const incoming = response.data;
         const comments = (incoming.comments || []).map((comment) => ({
@@ -96,6 +95,23 @@ export class BlogDetailComponent implements OnInit {
         this.renderedDescription = this.sanitizer.bypassSecurityTrustHtml(
           marked.parse(this.blog?.description || '') as string
         );
+        // Check if current user follows the author
+        const authorId = this.blog.authorId;
+        if (authorId && authorId !== this.currentUserId) {
+          this.followerService.isFollowing(authorId).subscribe({
+            next: (res) => { this.isFollowingAuthor = res.isFollowing; },
+            error: () => {}
+          });
+        }
+        // Fetch author's username from stakeholders
+        if (authorId) {
+          this.followerService.getUserInfo(authorId).subscribe({
+            next: (info) => {
+              if (this.blog) this.blog = { ...this.blog, authorUsername: info.username };
+            },
+            error: () => {}
+          });
+        }
         if (!silent) {
           this.loading = false;
         }
@@ -109,14 +125,23 @@ export class BlogDetailComponent implements OnInit {
     });
   }
 
-  toggleLike(): void {
-    if (!this.blog) {
-      return;
-    }
+  toggleFollowAuthor(): void {
+    const authorId = this.blog?.authorId;
+    if (!authorId || this.followLoading) return;
+    this.followLoading = true;
+    const req = this.isFollowingAuthor
+      ? this.followerService.unfollow(authorId)
+      : this.followerService.follow(authorId);
+    req.subscribe({
+      next: () => {
+        this.isFollowingAuthor = !this.isFollowingAuthor;
+        this.followLoading = false;
+      },
+      error: () => { this.followLoading = false; }
+    });
+  }
 
-    const headers = this.buildAuthHeaders();
-    if (!headers) {
-      this.error = 'No token found';
+  toggleLike(): void {    if (!this.blog) {
       return;
     }
 
@@ -127,8 +152,8 @@ export class BlogDetailComponent implements OnInit {
     }
 
     const request = this.isLiked
-      ? this.http.delete(`${this.apiBase}/blogs/${blogId}/like`, { headers })
-      : this.http.post(`${this.apiBase}/blogs/${blogId}/like`, {}, { headers });
+      ? this.http.delete(`${this.apiBase}/blogs/${blogId}/like`)
+      : this.http.post(`${this.apiBase}/blogs/${blogId}/like`, {});
 
     request.subscribe({
       next: () => {
@@ -146,12 +171,6 @@ export class BlogDetailComponent implements OnInit {
       return;
     }
 
-    const headers = this.buildAuthHeaders();
-    if (!headers) {
-      this.error = 'No token found';
-      return;
-    }
-
     const blogId = this.blog.id || this.blog._id;
     if (!blogId) {
       this.error = 'Blog id is missing';
@@ -160,13 +179,13 @@ export class BlogDetailComponent implements OnInit {
 
     const payload = { text: this.commentText.trim() };
 
-    this.http.post(`${this.apiBase}/blogs/${blogId}/comments`, payload, { headers }).subscribe({
+    this.http.post(`${this.apiBase}/blogs/${blogId}/comments`, payload).subscribe({
       next: () => {
         this.commentText = '';
         this.fetchBlog(true);
       },
       error: (err) => {
-        this.error = err?.error?.error || 'Failed to add comment';
+        this.error = err?.error?.message || err?.error?.error || 'Failed to add comment';
       }
     });
   }
@@ -186,12 +205,6 @@ export class BlogDetailComponent implements OnInit {
       return;
     }
 
-    const headers = this.buildAuthHeaders();
-    if (!headers) {
-      this.error = 'No token found';
-      return;
-    }
-
     const blogId = this.blog.id || this.blog._id;
     const commentId = comment.id || comment._id;
     if (!blogId || !commentId) {
@@ -201,7 +214,7 @@ export class BlogDetailComponent implements OnInit {
 
     const payload = { text: this.editingText.trim() };
 
-    this.http.put(`${this.apiBase}/blogs/${blogId}/comments/${commentId}`, payload, { headers }).subscribe({
+    this.http.put(`${this.apiBase}/blogs/${blogId}/comments/${commentId}`, payload).subscribe({
       next: () => {
         this.cancelEdit();
         this.fetchBlog(true);
@@ -237,13 +250,5 @@ export class BlogDetailComponent implements OnInit {
     } catch {
       return '';
     }
-  }
-
-  private buildAuthHeaders(): HttpHeaders | null {
-    const token = this.authService.getToken();
-    if (!token) {
-      return null;
-    }
-    return new HttpHeaders({ Authorization: `Bearer ${token}` });
   }
 }

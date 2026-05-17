@@ -16,6 +16,18 @@ func NewUserHandler(userRepo *repository.UserRepository) *UserHandler {
 	return &UserHandler{UserRepo: userRepo}
 }
 
+func (h *UserHandler) GetUserById(c *gin.Context) {
+	userID := c.Param("id")
+
+	user, err := h.UserRepo.FindById(userID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"id": user.ID, "username": user.Username})
+}
+
 func (h *UserHandler) GetAllUsers(c *gin.Context) {
 	role := c.GetString("role")
 	if role != "admin" {

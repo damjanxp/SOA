@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { AuthService } from '../../auth/auth.service';
+import { environment } from '../../../environments/environment';
 
 interface BlogListItem {
   id: string;
@@ -28,7 +28,7 @@ interface BlogListResponse {
   styleUrls: ['./blog-list.component.scss']
 })
 export class BlogListComponent implements OnInit {
-  private readonly apiBase = 'http://localhost:8082/api';
+  private readonly apiBase = environment.apiBase + '/api';
 
   blogs: BlogListItem[] = [];
   loading = false;
@@ -42,7 +42,6 @@ export class BlogListComponent implements OnInit {
   constructor(
     private http: HttpClient,
     private router: Router,
-    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -57,15 +56,7 @@ export class BlogListComponent implements OnInit {
       .set('page', this.page)
       .set('limit', this.limit);
 
-
-    const headers = this.buildAuthHeaders();
-    if (!headers) {
-      this.error = 'No token found';
-      this.loading = false;
-      return;
-    }
-
-    this.http.get<BlogListResponse>(`${this.apiBase}/blogs`, { params, headers }).subscribe({
+    this.http.get<BlogListResponse>(`${this.apiBase}/blogs`, { params }).subscribe({
       next: (response) => {
         const items = response.data || [];
         this.blogs = items.map((blog) => ({
@@ -113,13 +104,5 @@ export class BlogListComponent implements OnInit {
     }
     const date = new Date(value);
     return isNaN(date.getTime()) ? value : date.toLocaleDateString();
-  }
-
-  private buildAuthHeaders(): HttpHeaders | null {
-    const token = this.authService.getToken();
-    if (!token) {
-      return null;
-    }
-    return new HttpHeaders({ Authorization: `Bearer ${token}` });
   }
 }

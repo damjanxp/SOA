@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../auth/auth.service';
+import { FollowerService, Recommendation } from '../services/follower.service';
+import { environment } from '../../environments/environment';
 
 interface User {
   id: string;
@@ -20,69 +22,98 @@ export class UsersComponent implements OnInit {
   loading = true;
   error = '';
 
+  followingMap: { [userId: string]: boolean } = {};
+  recommendations: Recommendation[] = [];
+  myUserId = '';
+
   constructor(
     private http: HttpClient,
     private authService: AuthService,
+    private followerService: FollowerService,
   ) {}
 
   ngOnInit(): void {
+    this.myUserId = this.authService.getUserId();
     this.loadUsers();
+    this.loadRecommendations();
   }
 
   loadUsers(): void {
-    const token = this.authService.getToken();
-    console.log('Token:', token);
-    if (!token) {
-      this.error = 'No token found';
-      this.loading = false;
-      return;
-    }
-
-    const headers = new HttpHeaders({
-      Authorization: `Bearer ${token}`,
-    });
-
     this.http
-      .get<any>('http://localhost:8081/api/users', { headers })
+      .get<any>(`${environment.apiBase}/api/users`)
       .subscribe({
         next: (res) => {
-          console.log('Users response:', res);
-          // Backend vraća {data: [...]} struktura
           const data = res.data || res;
           this.users = Array.isArray(data) ? data : [];
-          console.log('Users loaded:', this.users);
           this.loading = false;
+          this.checkFollowingStatuses();
         },
         error: (err) => {
-          console.error('Users error:', err);
           this.error = err.error?.error || 'Greška pri učitavanju korisnika';
           this.loading = false;
         },
       });
   }
 
-  blockUser(user: User): void {
-    const token = this.authService.getToken();
-
-    if (!token) {
-      this.error = 'No token found';
-      return;
-    }
-
-    const headers = new HttpHeaders({
-      Authorization: `Bearer ${token}`,
+  checkFollowingStatuses(): void {
+    this.users.forEach((user) => {
+      if (user.id === this.myUserId) return;
+      this.followerService.isFollowing(user.id).subscribe({
+        next: (res) => {
+          this.followingMap[user.id] = res.isFollowing;
+        },
+        error: () => {
+          this.followingMap[user.id] = false;
+        },
+      });
     });
+  }
 
+  followUser(userId: string): void {
+    this.followerService.follow(userId).subscribe({
+      next: () => {
+        this.followingMap[userId] = true;
+      },
+      error: (err) => {
+        this.error = err.error?.error || 'Greška pri praćenju korisnika';
+      },
+    });
+  }
+
+  unfollowUser(userId: string): void {
+    this.followerService.unfollow(userId).subscribe({
+      next: () => {
+        this.followingMap[userId] = false;
+      },
+      error: (err) => {
+        this.error = err.error?.error || 'Greška pri otpraćivanju korisnika';
+      },
+    });
+  }
+
+  loadRecommendations(): void {
+    if (!this.myUserId) return;
+    this.followerService.getRecommendations(this.myUserId).subscribe({
+      next: (recs) => {
+        this.recommendations = recs;
+      },
+      error: () => {
+        // Silently ignore — recommendations are optional
+      },
+    });
+  }
+
+  blockUser(user: User): void {
     this.http
-      .put(`http://localhost:8081/api/users/${user.id}/block`, {}, { headers })
+      .put(`${environment.apiBase}/api/users/${user.id}/block`, {})
       .subscribe({
         next: () => {
           user.isBlocked = true;
         },
         error: (err) => {
-          console.error('Block error:', err);
           this.error = err.error?.error || 'Greška pri blokiranju';
         },
       });
   }
 }
+

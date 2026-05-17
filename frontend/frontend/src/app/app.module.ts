@@ -1,7 +1,8 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { HttpClientModule } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { AuthInterceptor } from './auth/auth.interceptor';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -19,8 +20,6 @@ import { TourDetailComponent } from './tour/tour-detail/tour-detail.component';
 import { TourKeypointsComponent } from './tour/tour-keypoints/tour-keypoints.component';
 import { TourReviewsComponent } from './tour/tour-reviews/tour-reviews.component';
 import { RouterModule } from '@angular/router';
-import { HTTP_INTERCEPTORS } from '@angular/common/http';
-import { AuthInterceptor } from './auth/auth.interceptor';
 import { AllToursComponent } from './tour/all-tours/all-tours.component';
 
 @NgModule({
@@ -49,7 +48,9 @@ import { AllToursComponent } from './tour/all-tours/all-tours.component';
     ReactiveFormsModule,
     RouterModule 
   ],
-  providers: [{ provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }],
+  providers: [
+    { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
