@@ -14,6 +14,7 @@
           <th>Email</th>
           <th>Uloga</th>
           <th>Blokiran</th>
+          <th>Akcije</th>
         </tr>
       </thead>
       <tbody>
@@ -32,6 +33,24 @@
               </button>
             </ng-container>
           </td>
+          <td>
+            <ng-container *ngIf="user.id !== myUserId">
+              <button
+                *ngIf="!followingMap[user.id]"
+                class="follow-btn"
+                (click)="followUser(user.id)"
+              >
+                PRATI
+              </button>
+              <button
+                *ngIf="followingMap[user.id]"
+                class="unfollow-btn"
+                (click)="unfollowUser(user.id)"
+              >
+                OTPRATI
+              </button>
+            </ng-container>
+          </td>
         </tr>
       </tbody>
     </table>
@@ -40,4 +59,35 @@
   <div *ngIf="!loading && users.length === 0 && !error" class="no-data">
     Nema korisnika
   </div>
+
+  <!-- Recommendations section -->
+  <div *ngIf="recommendations.length > 0" class="recommendations-section">
+    <h3>Preporučeni korisnici</h3>
+    <table class="users-table">
+      <thead>
+        <tr>
+          <th>Korisničko ime</th>
+          <th>Zajedničke veze</th>
+          <th>Akcije</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let rec of recommendations">
+          <td>{{ rec.username }}</td>
+          <td>{{ rec.mutualCount }}</td>
+          <td>
+            <button
+              *ngIf="!followingMap[rec.userId]"
+              class="follow-btn"
+              (click)="followUser(rec.userId)"
+            >
+              PRATI
+            </button>
+            <span *ngIf="followingMap[rec.userId]" class="badge active">Praćen</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </div>
+

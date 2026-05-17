@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { AuthService } from '../../auth/auth.service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-blog-form',
@@ -9,7 +9,7 @@ import { AuthService } from '../../auth/auth.service';
   styleUrls: ['./blog-form.component.scss']
 })
 export class BlogFormComponent {
-  private readonly apiBase = 'http://localhost:8082/api';
+  private readonly apiBase = environment.apiBase + '/api';
 
   title = '';
   description = '';
@@ -22,7 +22,6 @@ export class BlogFormComponent {
   constructor(
     private http: HttpClient,
     private router: Router,
-    private authService: AuthService
   ) {}
 
   addImageField(): void {
@@ -53,14 +52,7 @@ export class BlogFormComponent {
 
     this.loading = true;
 
-    const headers = this.buildAuthHeaders();
-    if (!headers) {
-      this.error = 'No token found';
-      this.loading = false;
-      return;
-    }
-
-    this.http.post(`${this.apiBase}/blogs`, payload, { headers }).subscribe({
+    this.http.post(`${this.apiBase}/blogs`, payload).subscribe({
       next: () => {
         this.loading = false;
         this.router.navigate(['/blogs']);
@@ -70,13 +62,5 @@ export class BlogFormComponent {
         this.loading = false;
       }
     });
-  }
-
-  private buildAuthHeaders(): HttpHeaders | null {
-    const token = this.authService.getToken();
-    if (!token) {
-      return null;
-    }
-    return new HttpHeaders({ Authorization: `Bearer ${token}` });
   }
 }

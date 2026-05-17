@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/damjanxp/gateway/routes"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
@@ -17,6 +18,15 @@ func main() {
 
 	// Initialize Gin router with default middleware (Logger + Recovery)
 	r := gin.Default()
+
+	// CORS — allow Angular dev server
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:4200"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization", "X-User-Id", "X-User-Role"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+	}))
 
 	// Register all routes
 	routes.SetupRouter(r)
@@ -32,4 +42,3 @@ func main() {
 		log.Fatalf("Failed to start gateway: %v", err)
 	}
 }
-

@@ -82,6 +82,72 @@ func (h *FollowerHandler) Unfollow(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Unfollowed"})
 }
 
+// GetRecommendations handles GET /api/followers/:userId/recommendations
+// Returns up to 10 users that the given user's friends follow but the user doesn't, ordered by mutual count.
+func (h *FollowerHandler) GetRecommendations(c *gin.Context) {
+	myId := c.Param("userId")
+
+	ctx := context.Background()
+	session := h.Driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	defer session.Close(ctx)
+
+	type Recommendation struct {
+		UserID      string `json:"userId"`
+		Username    string `json:"username"`
+		MutualCount int64  `json:"mutualCount"`
+	}
+
+	result, err := session.ExecuteRead(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
+		query := `
+			MATCH (me:User {userId: $myId})-[:FOLLOWS]->(friend:User)-[:FOLLOWS]->(rec:User)
+			WHERE NOT (me)-[:FOLLOWS]->(rec) AND rec.userId <> $myId
+			RETURN rec, count(*) as mutual ORDER BY mutual DESC LIMIT 10
+		`
+		res, err := tx.Run(ctx, query, map[string]any{"myId": myId})
+		if err != nil {
+			return nil, err
+		}
+
+		var recommendations []Recommendation
+		for res.Next(ctx) {
+			record := res.Record()
+
+			recNode, _ := record.Get("rec")
+			mutual, _ := record.Get("mutual")
+
+			node, ok := recNode.(neo4j.Node)
+			if !ok {
+				continue
+			}
+
+			userId, _ := node.Props["userId"].(string)
+			username, _ := node.Props["username"].(string)
+			mutualCount, _ := mutual.(int64)
+
+			recommendations = append(recommendations, Recommendation{
+				UserID:      userId,
+				Username:    username,
+				MutualCount: mutualCount,
+			})
+		}
+		if err := res.Err(); err != nil {
+			return nil, err
+		}
+		return recommendations, nil
+	})
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch recommendations"})
+		return
+	}
+
+	recs, _ := result.([]Recommendation)
+	if recs == nil {
+		recs = []Recommendation{}
+	}
+	c.JSON(http.StatusOK, recs)
+}
+
 // IsFollowing handles GET /api/followers/is-following/:userId
 // Returns whether the authenticated user follows the target user.
 func (h *FollowerHandler) IsFollowing(c *gin.Context) {
@@ -118,4 +184,3 @@ func (h *FollowerHandler) IsFollowing(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"isFollowing": result})
 }
-

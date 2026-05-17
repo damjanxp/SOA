@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { AuthService } from './auth/auth.service';
+import { environment } from '../environments/environment';
 
 @Injectable({
   providedIn: 'root',
@@ -12,15 +13,7 @@ export class ProfileService {
   ) {}
 
   getMyProfile() {
-    const token = this.authService.getToken();
-
-    const headers = new HttpHeaders({
-      Authorization: `Bearer ${token}`,
-    });
-
-    return this.http.get<any>('http://localhost:8081/api/profile/me', {
-      headers,
-    });
+    return this.http.get<any>(`${environment.apiBase}/api/profile/me`);
   }
 
   updateProfile(data: {
@@ -30,27 +23,7 @@ export class ProfileService {
     bio?: string;
     motto?: string;
   }) {
-    const token = this.authService.getToken();
-    const userId = this.getUserIdFromToken(token);
-
-    const headers = new HttpHeaders({
-      Authorization: `Bearer ${token}`,
-    });
-
-    return this.http.put<any>(`http://localhost:8081/api/users/${userId}/profile`, data, {
-      headers,
-    });
-  }
-
-  private getUserIdFromToken(token: string | null): string {
-    if (!token) {
-      return '';
-    }
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      return payload?.userId || '';
-    } catch {
-      return '';
-    }
+    const userId = this.authService.getUserId();
+    return this.http.put<any>(`${environment.apiBase}/api/users/${userId}/profile`, data);
   }
 }

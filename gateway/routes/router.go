@@ -102,6 +102,7 @@ func SetupRouter(r *gin.Engine) {
 	{
 		// Stakeholders service
 		protected.Any("/users/*path", ReverseProxy(stakeholdersURL))
+		protected.Any("/profile/*path", ReverseProxy(stakeholdersURL))
 
 		// Follower service
 		protected.Any("/followers/*path", ReverseProxy(followerURL))
@@ -113,4 +114,3 @@ func SetupRouter(r *gin.Engine) {
 		protected.Any("/tours/*path", ReverseProxy(tourURL))
 	}
 }
-

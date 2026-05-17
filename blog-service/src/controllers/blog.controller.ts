@@ -1,6 +1,10 @@
 import { Response } from "express";
+import axios from "axios";
 import Blog from "../models/blog.model";
 import { AuthRequest } from "../middleware/auth.middleware";
+
+const FOLLOWER_SERVICE_URL =
+  process.env.FOLLOWER_SERVICE_URL || "http://follower-service:8084";
 
 function parsePositiveInt(value: unknown, fallback: number): number {
   if (typeof value !== "string") {
@@ -68,6 +72,43 @@ export async function addComment(
     if (!blog) {
       res.status(404).json({ message: "Blog not found" });
       return;
+    }
+
+    // Check that the requesting user follows the blog author
+    const authorId = blog.authorId;
+    const requestingUserId = req.user!.userId;
+
+    if (requestingUserId !== authorId) {
+      try {
+        const followerResponse = await axios.get(
+          `${FOLLOWER_SERVICE_URL}/api/followers/is-following/${authorId}`,
+          {
+            headers: {
+              Authorization: req.headers.authorization ?? "",
+            },
+          }
+        );
+
+        if (followerResponse.data?.isFollowing === false) {
+          res.status(403).json({
+            message: "Morate pratiti autora da biste komentarisali",
+          });
+          return;
+        }
+      } catch (err: any) {
+        if (err.response) {
+          // follower-service returned an error (e.g. 401)
+          res
+            .status(err.response.status)
+            .json({ message: "Follower service error", error: err.response.data });
+          return;
+        }
+        // Network / connectivity error
+        res
+          .status(503)
+          .json({ message: "Follower service unavailable" });
+        return;
+      }
     }
 
     const now = new Date();

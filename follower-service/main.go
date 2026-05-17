@@ -48,6 +48,7 @@ func main() {
 		api.POST("/followers/follow/:userId", followerHandler.Follow)
 		api.DELETE("/followers/unfollow/:userId", followerHandler.Unfollow)
 		api.GET("/followers/is-following/:userId", followerHandler.IsFollowing)
+		api.GET("/followers/:userId/recommendations", followerHandler.GetRecommendations)
 	}
 
 	// Start server
