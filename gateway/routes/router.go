@@ -93,7 +93,9 @@ func SetupRouter(r *gin.Engine) {
 		c.JSON(http.StatusOK, gin.H{"status": "ok", "service": "gateway"})
 	})
 
-	// Unprotected auth routes
+	// Unprotected auth routes (OPTIONS needed for CORS preflight)
+	r.OPTIONS("/api/auth/register", func(c *gin.Context) { c.Status(http.StatusNoContent) })
+	r.OPTIONS("/api/auth/login", func(c *gin.Context) { c.Status(http.StatusNoContent) })
 	r.POST("/api/auth/register", ReverseProxy(stakeholdersURL))
 	r.POST("/api/auth/login", ReverseProxy(stakeholdersURL))
 
