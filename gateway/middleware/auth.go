@@ -12,6 +12,12 @@ import (
 // AuthMiddleware validates the JWT Bearer token and sets userId, username and role in the Gin context.
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		// Allow CORS preflight requests without auth
+		if c.Request.Method == http.MethodOptions {
+			c.Next()
+			return
+		}
+
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Missing or invalid Authorization header"})
