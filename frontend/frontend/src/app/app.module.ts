@@ -14,6 +14,13 @@ import { ProfileComponent } from './profile/profile.component';
 import { BlogListComponent } from './blog/blog-list/blog-list.component';
 import { BlogDetailComponent } from './blog/blog-detail/blog-detail.component';
 import { BlogFormComponent } from './blog/blog-form/blog-form.component';
+import { TourListComponent } from './tour/tour-list/tour-list.component';
+import { TourFormComponent } from './tour/tour-form/tour-form.component';
+import { TourDetailComponent } from './tour/tour-detail/tour-detail.component';
+import { TourKeypointsComponent } from './tour/tour-keypoints/tour-keypoints.component';
+import { TourReviewsComponent } from './tour/tour-reviews/tour-reviews.component';
+import { RouterModule } from '@angular/router';
+import { AllToursComponent } from './tour/all-tours/all-tours.component';
 
 @NgModule({
   declarations: [
@@ -25,14 +32,21 @@ import { BlogFormComponent } from './blog/blog-form/blog-form.component';
     ProfileComponent,
     BlogListComponent,
     BlogDetailComponent,
-    BlogFormComponent
+    BlogFormComponent,
+    TourListComponent,
+    TourFormComponent,
+    TourDetailComponent,
+    TourKeypointsComponent,
+    TourReviewsComponent,
+    AllToursComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     HttpClientModule,
     FormsModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    RouterModule 
   ],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },

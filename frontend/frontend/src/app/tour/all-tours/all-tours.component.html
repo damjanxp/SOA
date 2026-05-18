@@ -1,0 +1,36 @@
+<div class="tours-container">
+  <div class="header">
+    <h1>Sve ture</h1>
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+  <div *ngIf="loading" class="loading">Učitavanje...</div>
+
+  <div *ngIf="!loading && tours.length === 0" class="empty-state">
+    <p>Nema dostupnih tura.</p>
+  </div>
+
+  <div *ngIf="!loading && tours.length > 0" class="tours-grid">
+    <div *ngFor="let tour of tours" class="tour-card">
+      <div class="tour-header">
+        <h3>{{ tour.name }}</h3>
+        <span class="difficulty">{{ tour.difficulty }}</span>
+      </div>
+
+      <p class="tour-description">{{ tour.description }}</p>
+
+      <div class="tour-meta">
+        <span><strong>Dužina:</strong> {{ tour.lengthKm }} km</span>
+        <span><strong>Cena:</strong> {{ tour.price }} $</span>
+      </div>
+
+      <div class="tour-tags" *ngIf="tour.tags && tour.tags.length > 0">
+        <span *ngFor="let tag of tour.tags" class="tag">{{ tag }}</span>
+      </div>
+
+      <div class="tour-actions">
+        <button class="btn btn-info" (click)="viewTour(tour.id!)">Pogledaj</button>
+      </div>
+    </div>
+  </div>
+</div>
