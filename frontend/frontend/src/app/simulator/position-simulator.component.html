@@ -1,0 +1,20 @@
+<div class="simulator-container">
+  <div class="header">
+    <h1>Simulator pozicije</h1>
+    <p>Klikni na mapu da postaviš svoju trenutnu lokaciju</p>
+  </div>
+
+  <div class="map-wrapper">
+    <div id="simulator-map"></div>
+    <div class="coords-overlay" *ngIf="currentPosition">
+      📍 {{ currentPosition.lat | number:'1.6-6' }}, {{ currentPosition.lng | number:'1.6-6' }}
+    </div>
+    <div class="coords-overlay no-position" *ngIf="!currentPosition">
+      Lokacija nije postavljena
+    </div>
+  </div>
+
+  <div class="actions" *ngIf="currentPosition">
+    <button class="btn-clear" (click)="clearPosition()">Obriši lokaciju</button>
+  </div>
+</div>

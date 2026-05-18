@@ -21,7 +21,8 @@ const iconDefault = L.icon({
   styleUrls: ['./tour-keypoints.component.scss']
 })
 export class TourKeypointsComponent implements OnInit, AfterViewInit {
-
+  private tourMarkers: L.Marker[] = [];
+  private tourPolyline: L.Polyline | null = null;
   keypointForm!: FormGroup;
   keypoints: Keypoint[] = [];
   loading = false;
@@ -42,12 +43,25 @@ export class TourKeypointsComponent implements OnInit, AfterViewInit {
   ) {}
 
   ngOnInit(): void {
-    this.initForm();
-    this.route.params.subscribe(params => {
-      this.tourId = +params['id'];
-      this.loadKeypoints();
-    });
-  }
+  this.initForm();
+  this.route.params.subscribe(params => {
+    this.tourId = +params['id'];
+    this.loadKeypoints();
+  });
+
+  // Osvezi mapu kad se promeni orderIndex
+  this.keypointForm.get('orderIndex')?.valueChanges.subscribe(() => {
+    if (this.editingId) {
+      const updated = this.keypoints.map(kp =>
+        kp.id === this.editingId
+          ? { ...kp, orderIndex: parseInt(this.keypointForm.value.orderIndex) }
+          : kp
+      );
+      this.keypoints = updated;
+      this.renderKeypointsOnMap();
+    }
+  });
+}
 
   ngAfterViewInit(): void {
     this.initMap();
@@ -104,14 +118,38 @@ export class TourKeypointsComponent implements OnInit, AfterViewInit {
     });
   }
 
-  renderKeypointsOnMap(): void {
-    if (!this.map) return;
-    this.keypoints.forEach(kp => {
-      L.marker([kp.lat, kp.lon], { icon: iconDefault })
-        .addTo(this.map)
-        .bindPopup(`<b>${kp.orderIndex}. ${kp.name}</b><br>${kp.description}`);
-    });
+ renderKeypointsOnMap(): void {
+  if (!this.map) return;
+
+  // Obrisi stare markere i polyline
+  this.tourMarkers.forEach(m => this.map.removeLayer(m));
+  this.tourMarkers = [];
+  if (this.tourPolyline) {
+    this.map.removeLayer(this.tourPolyline);
+    this.tourPolyline = null;
   }
+
+  const sorted = [...this.keypoints].sort((a, b) => a.orderIndex - b.orderIndex);
+
+  sorted.forEach(kp => {
+    const marker = L.marker([kp.lat, kp.lon], { icon: iconDefault })
+      .addTo(this.map)
+      .bindPopup(`<b>${kp.orderIndex}. ${kp.name}</b><br>${kp.description}`);
+    this.tourMarkers.push(marker);
+  });
+
+  if (sorted.length > 1) {
+    const latLngs = sorted.map(kp => L.latLng(kp.lat, kp.lon));
+    this.tourPolyline = L.polyline(latLngs, {
+      color: '#3388ff',
+      weight: 3,
+      opacity: 0.7
+    }).addTo(this.map);
+
+    const group = L.featureGroup(this.tourMarkers);
+    this.map.fitBounds(group.getBounds().pad(0.1));
+  }
+}
 
   onSubmit(): void {
     if (this.keypointForm.invalid) return;
