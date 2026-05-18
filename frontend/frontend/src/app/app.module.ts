@@ -3,7 +3,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AuthInterceptor } from './auth/auth.interceptor';
-
+import { PositionSimulatorComponent } from './simulator/position-simulator.component';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { LoginComponent } from './auth/login/login.component';
@@ -38,7 +38,8 @@ import { AllToursComponent } from './tour/all-tours/all-tours.component';
     TourDetailComponent,
     TourKeypointsComponent,
     TourReviewsComponent,
-    AllToursComponent
+    AllToursComponent,
+    PositionSimulatorComponent
   ],
   imports: [
     BrowserModule,
