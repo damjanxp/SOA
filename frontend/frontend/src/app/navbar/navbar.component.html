@@ -13,9 +13,10 @@
           <a routerLink="/tours/new">New Tour</a>
         </ng-container>
 
-        <!-- Turista vidi sve ture -->
+        <!-- Turista vidi sve ture i simulator -->
         <ng-container *ngIf="authService.getRole() === 'tourist'">
           <a routerLink="/all-tours">Tours</a>
+          <a routerLink="/simulator">Simulator pozicije</a>
         </ng-container>
 
 

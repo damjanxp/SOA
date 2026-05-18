@@ -14,6 +14,7 @@ import { TourDetailComponent } from './tour/tour-detail/tour-detail.component';
 import { TourKeypointsComponent } from './tour/tour-keypoints/tour-keypoints.component';
 import { TourReviewsComponent } from './tour/tour-reviews/tour-reviews.component';
 import { AllToursComponent } from './tour/all-tours/all-tours.component';
+import { PositionSimulatorComponent } from './simulator/position-simulator.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -21,7 +22,8 @@ const routes: Routes = [
   { path: 'register', component: RegisterComponent },
   { path: 'users', component: UsersComponent, canActivate: [AuthGuard] },
   { path: 'profile', component: ProfileComponent },
-  
+  { path: 'simulator', component: PositionSimulatorComponent, canActivate: [AuthGuard] },
+
   // Blog routes
   { path: 'blogs', component: BlogListComponent, canActivate: [AuthGuard] },
   { path: 'blogs/new', component: BlogFormComponent, canActivate: [AuthGuard] },
