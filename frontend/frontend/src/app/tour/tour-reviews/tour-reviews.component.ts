@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TourService, Review } from '../tour.service';
+import { AuthService } from '../../auth/auth.service';
 
 @Component({
   selector: 'app-tour-reviews',
@@ -20,7 +21,8 @@ export class TourReviewsComponent implements OnInit {
     private fb: FormBuilder,
     private tourService: TourService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    public authService: AuthService
   ) { }
 
   ngOnInit(): void {
@@ -74,7 +76,7 @@ export class TourReviewsComponent implements OnInit {
     const reviewData = {
       rating: parseInt(formValue.rating),
       comment: formValue.comment,
-      visitDate: formValue.visitDate,
+      visitDate: formValue.visitDate + 'T00:00:00', // dodaj vreme
       images: images
     };
 
@@ -117,7 +119,10 @@ export class TourReviewsComponent implements OnInit {
   }
 
   back(): void {
-    if (this.tourId) {
+    const role = this.authService.getRole();
+    if (role === 'tourist') {
+      this.router.navigate(['/all-tours']);
+    } else if (this.tourId) {
       this.router.navigate(['/tours', this.tourId]);
     } else {
       this.router.navigate(['/tours']);

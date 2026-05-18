@@ -1,7 +1,7 @@
 <div class="tour-detail-container" *ngIf="tour; else loadingTpl">
 
   <div class="header">
-    <button class="btn-back" (click)="back()">← Nazad</button>
+    <button class="btn-back" (click)="back()">← Back</button>
 
     <div>
       <h1>{{ tour.name }}</h1>
@@ -19,15 +19,14 @@
     <p>{{ tour.description }}</p>
 
     <div class="meta">
-      <span>Težina: {{ tour.difficulty }}</span>
-      <span>Dužina: {{ tour.lengthKm }} km</span>
-      <span>Cena: {{ tour.price }} $</span>
+      <span>Difficulty: {{ tour.difficulty }}</span>
+      <span>Length: {{ tour.lengthKm }} km</span>
+      <span>Price: {{ tour.price }} $</span>
     </div>
 
     <div class="actions">
-      <button (click)="editTour()">Uredi</button>
-      <button (click)="manageKeypoints()">Ključne tačke</button>
-      <button (click)="manageReviews()">Recenzije</button>
+      <button (click)="editTour()">Edit</button>
+      <button (click)="manageKeypoints()">Manage Keypoints</button>
     </div>
   </div>
 
@@ -43,10 +42,10 @@
   <div class="tab-content">
 
     <div *ngIf="activeTab === 'keypoints'">
-      <h3>Ključne tačke</h3>
+      <h3>Keypoints</h3>
 
       <div *ngIf="keypoints.length === 0">
-        Nema ključnih tačaka
+        No keypoints available.
       </div>
 
       <div *ngFor="let kp of keypoints" class="keypoint">
@@ -57,13 +56,28 @@
     </div>
 
     <div *ngIf="activeTab === 'reviews'">
-      <h3>Recenzije</h3>
-      <p>Ovo će doći iz API-ja</p>
+  <h3>Reviews ({{ reviews.length }})</h3>
+
+  <div *ngIf="reviews.length === 0" class="empty-reviews">
+    No reviews available for this tour.
+  </div>
+
+  <div *ngFor="let review of reviews" class="review-card">
+    <div class="review-header">
+      <span class="stars">
+        <span *ngFor="let star of getRatingStars(review.rating)">{{ star }}</span>
+      </span>
+      <span class="rating-value">({{ review.rating }}/5)</span>
+      <small class="review-date">{{ review.createdAt | date: 'dd.MM.yyyy' }}</small>
     </div>
+    <p class="review-comment">{{ review.comment }}</p>
+    <small class="visit-date">Visited: {{ review.visitDate | date: 'dd.MM.yyyy' }}</small>
+  </div>
+</div>
 
   </div>
 </div>
 
 <ng-template #loadingTpl>
-  <div class="loading" *ngIf="loading">Učitavanje...</div>
+  <div class="loading" *ngIf="loading">Loading...</div>
 </ng-template>

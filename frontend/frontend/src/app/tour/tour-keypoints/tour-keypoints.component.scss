@@ -31,7 +31,6 @@
 }
 
 .map-section {
-  grid-column: 1 / -1;
   margin-bottom: 10px;
 
   h2 {
@@ -43,6 +42,11 @@
     margin-top: 8px;
     font-size: 0.9rem;
     color: #555;
+  }
+
+  #keypoint-map {
+    width: 100%;
+    z-index: 1;
   }
 }
 

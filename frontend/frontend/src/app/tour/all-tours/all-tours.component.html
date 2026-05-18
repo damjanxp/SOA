@@ -1,13 +1,13 @@
 <div class="tours-container">
   <div class="header">
-    <h1>Sve ture</h1>
+    <h1>Tours</h1>
   </div>
 
   <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
-  <div *ngIf="loading" class="loading">Učitavanje...</div>
+  <div *ngIf="loading" class="loading">Loading...</div>
 
   <div *ngIf="!loading && tours.length === 0" class="empty-state">
-    <p>Nema dostupnih tura.</p>
+    <p>No available tours.</p>
   </div>
 
   <div *ngIf="!loading && tours.length > 0" class="tours-grid">
@@ -20,8 +20,8 @@
       <p class="tour-description">{{ tour.description }}</p>
 
       <div class="tour-meta">
-        <span><strong>Dužina:</strong> {{ tour.lengthKm }} km</span>
-        <span><strong>Cena:</strong> {{ tour.price }} $</span>
+        <span><strong>Length:</strong> {{ tour.lengthKm }} km</span>
+        <span><strong>Price:</strong> {{ tour.price }} $</span>
       </div>
 
       <div class="tour-tags" *ngIf="tour.tags && tour.tags.length > 0">
@@ -29,7 +29,7 @@
       </div>
 
       <div class="tour-actions">
-        <button class="btn btn-info" (click)="viewTour(tour.id!)">Pogledaj</button>
+        <button class="btn btn-info" (click)="viewTour(tour.id!)">Rate tour</button>
       </div>
     </div>
   </div>

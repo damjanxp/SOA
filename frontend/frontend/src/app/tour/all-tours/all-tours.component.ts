@@ -33,6 +33,6 @@ export class AllToursComponent implements OnInit {
   }
 
   viewTour(id: number): void {
-    this.router.navigate(['/all-tours', id]);
+    this.router.navigate(['/tours', id, 'reviews']);
   }
 }
