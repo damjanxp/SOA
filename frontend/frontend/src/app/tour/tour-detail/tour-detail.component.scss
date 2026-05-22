@@ -1,78 +1,290 @@
+// Paleta boja (možeš prilagoditi po želji)
+$primary-color: #0284c7; // Moderna plava (sky/tailwind stil)
+$primary-hover: #0369a1;
+$text-dark: #1e293b;
+$text-muted: #64748b;
+$bg-light: #f8fafc;
+$border-color: #e2e8f0;
+
 .tour-detail-container {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 20px;
-}
+  max-width: 1000px;
+  margin: 40px auto;
+  padding: 30px;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  color: $text-dark;
 
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
+  // Sređivanje headera
+  .header {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 24px;
+    border-bottom: 1px solid $border-color;
+    padding-bottom: 20px;
 
-.btn-back {
-  background: none;
-  border: none;
-  font-size: 16px;
-  cursor: pointer;
-  color: #007bff;
-}
+    .btn-back {
+      align-self: flex-start;
+      background: transparent;
+      border: 1px solid $border-color;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 500;
+      color: $text-muted;
+      cursor: pointer;
+      transition: all 0.2s ease;
 
-.status {
-  padding: 4px 10px;
-  border-radius: 4px;
-  font-size: 12px;
+      &:hover {
+        background: $bg-light;
+        color: $text-dark;
+        border-color: #cbd5e1;
+      }
+    }
 
-  &.draft {
-    background: #ffc107;
+    // Grupa gde su naslov i status (sada stoje lepo zajedno na levoj strani)
+    & > div {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+
+      h1 {
+        margin: 0;
+        font-size: 2rem;
+        font-weight: 700;
+        letter-spacing: -0.5px;
+      }
+    }
   }
 
-  &.published {
-    background: #28a745;
-    color: white;
+  // Status bedževi
+  .status {
+    padding: 6px 14px;
+    border-radius: 30px;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+
+    &.draft {
+      background: #fef3c7;
+      color: #d97706;
+    }
+
+    &.published {
+      background: #dcfce7;
+      color: #15803d;
+    }
+
+    &.archived {
+      background: #f1f5f9;
+      color: #475569;
+    }
   }
 
-  &.archived {
-    background: #6c757d;
-    color: white;
+  // Glavni info o turi
+  .tour-info {
+    margin-bottom: 32px;
+
+    p {
+      font-size: 16px;
+      line-height: 1.6;
+      color: #334155;
+      margin-bottom: 20px;
+    }
+
+    // Meta informacije (Težina, dužina, cena) spakovane u info-kartice
+    .meta {
+      display: flex;
+      gap: 20px;
+      margin: 20px 0;
+      flex-wrap: wrap;
+
+      span {
+        background: $bg-light;
+        padding: 10px 16px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        color: $text-muted;
+        border: 1px solid $border-color;
+
+        // Isticanje vrednosti unutar meta tagova
+        strong, &::shadow { color: $text-dark; }
+      }
+    }
+
+    // Akcioni tasteri (Edit, Manage...)
+    .actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+
+      button {
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: none;
+
+        // Prvi taster (Edit) - Primary stil
+        &:first-child {
+          background: $primary-color;
+          color: white;
+
+          &:hover { background: $primary-hover; }
+        }
+
+        // Drugi taster (Manage) - Outline/Secondary stil
+        &:nth-child(2) {
+          background: $primary-color;
+          color: white;
+          border: 1px solid $border-color;
+
+          &:hover { background: $primary-hover; }
+        }
+      }
+    }
   }
-}
 
-.meta {
-  display: flex;
-  gap: 15px;
-  margin: 10px 0;
-}
+  // Prelepi moderni tabovi u vidu podvučene navigacije
+  .tabs {
+    display: flex;
+    border-bottom: 2px solid $border-color;
+    margin-top: 40px;
+    gap: 8px;
 
-.actions button {
-  margin-right: 10px;
-}
+    button {
+      background: transparent;
+      border: none;
+      padding: 12px 20px;
+      font-size: 15px;
+      font-weight: 600;
+      color: $text-muted;
+      cursor: pointer;
+      position: relative;
+      transition: color 0.2s ease;
+      margin-bottom: -2px; // Preklapanje preko border-a
 
-.tabs {
-  margin-top: 20px;
+      &:hover {
+        color: $text-dark;
+      }
 
-  button {
-    margin-right: 10px;
-    padding: 6px 12px;
+      &.active {
+        color: $primary-color;
+        border-bottom: 2px solid $primary-color;
+      }
+    }
   }
 
-  .active {
-    background: #007bff;
-    color: white;
+  // Sadržaj ispod tabova
+  .tab-content {
+    padding: 24px 0;
+
+    h3 {
+      font-size: 1.3rem;
+      margin-bottom: 16px;
+      font-weight: 600;
+    }
   }
-}
 
-.keypoint {
-  padding: 10px;
-  border-bottom: 1px solid #ddd;
-}
+  // Keypoints stilizacija
+  .keypoint {
+    background: $bg-light;
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    border: 1px solid $border-color;
+    transition: transform 0.2s ease;
 
-.coords {
-  font-size: 12px;
-  color: gray;
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    }
+
+    strong {
+      color: $primary-color;
+      margin-right: 4px;
+    }
+
+    .coords {
+      margin-top: 6px;
+      font-size: 12px;
+      color: $text-muted;
+      font-family: monospace;
+    }
+  }
+
+  // Recenzije (Reviews)
+  .review-card {
+    background: white;
+    border: 1px solid $border-color;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+
+    .review-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+
+      .stars {
+        color: #f5a623;
+        font-size: 1.1rem;
+        letter-spacing: 2px;
+      }
+
+      .rating-value {
+        color: $text-muted;
+        font-size: 0.9rem;
+        font-weight: 500;
+      }
+
+      .review-date {
+        margin-left: auto;
+        color: $text-muted;
+        font-size: 0.85rem;
+      }
+    }
+
+    .review-comment {
+      margin: 0 0 12px 0;
+      color: #334155;
+      line-height: 1.6;
+      font-size: 15px;
+    }
+
+    .visit-date {
+      color: $text-muted;
+      font-size: 0.8rem;
+      display: block;
+      border-top: 1px solid #f1f5f9;
+      padding-top: 8px;
+    }
+  }
+
+  .empty-reviews, .tab-content > div > div:not(.keypoint) {
+    text-align: center;
+    padding: 40px;
+    color: $text-muted;
+    background: $bg-light;
+    border-radius: 8px;
+    border: 1px dashed $border-color;
+    font-style: italic;
+  }
 }
 
 .loading {
   text-align: center;
-  padding: 40px;
+  padding: 60px;
+  font-size: 18px;
+  color: $text-muted;
+  font-weight: 500;
 }

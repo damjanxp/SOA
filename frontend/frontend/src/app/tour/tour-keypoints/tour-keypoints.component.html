@@ -1,7 +1,7 @@
 <div class="keypoints-container">
   <div class="header">
-    <button class="btn-back" (click)="back()">← Nazad</button>
-    <h1>Upravljanje ključnim tačkama</h1>
+    <button class="btn-back" (click)="back()">← Back</button>
+    <h1>Manage Keypoints</h1>
   </div>
 
   <div *ngIf="error" class="alert alert-danger">
@@ -9,25 +9,26 @@
   </div>
 
   <div *ngIf="loading" class="loading">
-    Učitavanje...
+    Loading...
   </div>
 
-  <div class="content">
-    <div class="map-section">
-  <h2>Klikni na mapu da odabereš lokaciju</h2>
+  <div class="map-section">
+  <h2>Click on the map to select a location</h2>
   <div id="keypoint-map" style="height: 400px; border-radius: 8px;"></div>
   <div *ngIf="selectedLat" class="selected-coords">
-    Odabrano: {{ selectedLat | number:'1.6-6' }}, {{ selectedLon | number:'1.6-6' }}
+    Selected: {{ selectedLat | number:'1.6-6' }}, {{ selectedLon | number:'1.6-6' }}
   </div>
 </div>
+  <div class="content">
+
     <div class="form-section">
-      <h2>{{ editingId ? 'Uredi ključnu tačku' : 'Dodaj novu ključnu tačku' }}</h2>
+      <h2>{{ editingId ? 'Edit Keypoint' : 'Add New Keypoint' }}</h2>
       
       <form [formGroup]="keypointForm" (ngSubmit)="onSubmit()" class="keypoint-form">
         
         <div class="form-row">
           <div class="form-group">
-            <label for="lat">Geografska širina (Latitude) *</label>
+            <label for="lat">Latitude *</label>
             <input 
               type="number" 
               id="lat" 
@@ -39,7 +40,7 @@
           </div>
 
           <div class="form-group">
-            <label for="lon">Geografska dužina (Longitude) *</label>
+            <label for="lon">Longitude *</label>
             <input 
               type="number" 
               id="lon" 
@@ -52,7 +53,7 @@
         </div>
 
         <div class="form-group">
-          <label for="name">Naziv *</label>
+          <label for="name">Name *</label>
           <input 
             type="text" 
             id="name" 
@@ -67,7 +68,7 @@
         </div>
 
         <div class="form-group">
-          <label for="description">Opis *</label>
+          <label for="description">Description *</label>
           <textarea 
             id="description" 
             formControlName="description" 
@@ -83,7 +84,7 @@
 
         <div class="form-row">
           <div class="form-group">
-            <label for="imageUrl">URL slike</label>
+            <label for="imageUrl">Image URL</label>
             <input 
               type="url" 
               id="imageUrl" 
@@ -94,7 +95,7 @@
           </div>
 
           <div class="form-group">
-            <label for="orderIndex">Redosled *</label>
+            <label for="orderIndex">Order *</label>
             <input 
               type="number" 
               id="orderIndex" 
@@ -107,20 +108,20 @@
 
         <div class="form-actions">
           <button type="submit" class="btn btn-primary" [disabled]="keypointForm.invalid">
-            {{ editingId ? 'Ažuriraj' : 'Dodaj' }}
+            {{ editingId ? 'Update' : 'Add' }}
           </button>
           <button type="button" class="btn btn-secondary" (click)="cancelEdit()" *ngIf="editingId">
-            Otkaži
+            Cancel
           </button>
         </div>
       </form>
     </div>
 
     <div class="keypoints-section">
-      <h2>Ključne tačke ({{ keypoints.length }})</h2>
+      <h2>Key Points ({{ keypoints.length }})</h2>
 
       <div *ngIf="keypoints.length === 0" class="empty-message">
-        Nema dodanih ključnih tačaka
+        No key points added yet. Start by adding a new key point!
       </div>
 
       <div *ngIf="keypoints.length > 0" class="keypoints-list">
@@ -132,13 +133,13 @@
             <p>{{ kp.description }}</p>
             <div class="kp-meta">
               <span>📍 {{ kp.lat }}, {{ kp.lon }}</span>
-              <span *ngIf="kp.imageUrl">🖼️ Ima sliku</span>
+              <span *ngIf="kp.imageUrl">🖼️ Have Image</span>
             </div>
           </div>
 
           <div class="kp-actions">
-            <button class="btn btn-sm btn-warning" (click)="editKeypoint(kp)">Uredi</button>
-            <button class="btn btn-sm btn-danger" (click)="deleteKeypoint(kp.id)">Obriši</button>
+            <button class="btn btn-sm btn-warning" (click)="editKeypoint(kp)">Edit</button>
+            <button class="btn btn-sm btn-danger" (click)="deleteKeypoint(kp.id)">Remove</button>
           </div>
         </div>
       </div>

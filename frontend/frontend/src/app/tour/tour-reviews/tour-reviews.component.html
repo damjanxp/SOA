@@ -1,7 +1,9 @@
+<div class="form-section" *ngIf="authService.getRole() === 'tourist'">
+  <h2>Leave a Review</h2>
 <div class="reviews-container">
   <div class="header">
-    <button class="btn-back" (click)="back()">← Nazad</button>
-    <h1>Recenzije ture</h1>
+    <button class="btn-back" (click)="back()">← Back</button>
+    <h1>Tour Reviews</h1>
   </div>
 
   <div *ngIf="error" class="alert alert-danger">
@@ -13,45 +15,45 @@
   </div>
 
   <div *ngIf="loading" class="loading">
-    Učitavanje...
+    Loading...
   </div>
 
   <div class="content">
     <div class="form-section">
-      <h2>Ostavi recenziju</h2>
-      
+      <h2>Leave a Review</h2>
+
       <form [formGroup]="reviewForm" (ngSubmit)="onSubmit()" class="review-form">
         
         <div class="form-group">
-          <label for="rating">Ocena (1-5) *</label>
+          <label for="rating">Rating (1-5) *</label>
           <div class="rating-input">
             <select id="rating" formControlName="rating" class="form-control">
-              <option value="1">1 ★ - Loša</option>
-              <option value="2">2 ★★ - Zadovoljavajuća</option>
-              <option value="3">3 ★★★ - Dobra</option>
-              <option value="4">4 ★★★★ - Odličan</option>
-              <option value="5">5 ★★★★★ - Odličan!</option>
+              <option value="1">1 ★</option>
+              <option value="2">2 ★★</option>
+              <option value="3">3 ★★★</option>
+              <option value="4">4 ★★★★</option>
+              <option value="5">5 ★★★★★</option>
             </select>
           </div>
         </div>
 
         <div class="form-group">
-          <label for="comment">Komentar *</label>
+          <label for="comment">Comment *</label>
           <textarea 
             id="comment" 
             formControlName="comment" 
             class="form-control"
             rows="5"
-            placeholder="Podelite svoje iskustvo sa ovom turom..."
+            placeholder="Share your experience with this tour..."
           ></textarea>
           <div *ngIf="reviewForm.get('comment')?.invalid && reviewForm.get('comment')?.touched" 
                class="error-message">
-            <small>Komentar je obavezan</small>
+            <small>Comment is required</small>
           </div>
         </div>
 
         <div class="form-group">
-          <label for="visitDate">Datum posete ture *</label>
+          <label for="visitDate">Visit Date *</label>
           <input 
             type="date" 
             id="visitDate" 
@@ -60,12 +62,12 @@
           >
           <div *ngIf="reviewForm.get('visitDate')?.invalid && reviewForm.get('visitDate')?.touched" 
                class="error-message">
-            <small>Datum posete je obavezan</small>
+            <small>Visit date is required</small>
           </div>
         </div>
 
         <div class="form-group">
-          <label for="images">URL slike (odvojene zarezima)</label>
+          <label for="images">Image URLs (comma-separated)</label>
           <input 
             type="text" 
             id="images" 
@@ -73,22 +75,22 @@
             class="form-control"
             placeholder="https://..., https://..."
           >
-          <small class="text-muted">Unesite URL-ove odvojene zarezima</small>
+          <small class="text-muted">Enter URLs separated by commas</small>
         </div>
 
         <div class="form-actions">
           <button type="submit" class="btn btn-primary" [disabled]="reviewForm.invalid">
-            Pošalji recenziju
+            Submit Review
           </button>
         </div>
       </form>
     </div>
 
     <div class="reviews-section">
-      <h2>Recenzije ({{ reviews.length }})</h2>
+      <h2>Reviews ({{ reviews.length }})</h2>
 
       <div *ngIf="reviews.length === 0" class="empty-message">
-        Nema recenzija za ovu turu
+        No reviews available for this tour
       </div>
 
       <div *ngIf="reviews.length > 0" class="reviews-list">
@@ -104,28 +106,29 @@
 
           <div class="review-meta">
             <small>
-              <strong>Posetio/la:</strong> {{ review.visitDate | date: 'dd.MM.yyyy' }}
+              <strong>Visited:</strong> {{ review.visitDate | date: 'dd.MM.yyyy' }}
             </small>
           </div>
 
           <p class="review-comment">{{ review.comment }}</p>
 
           <div *ngIf="review.images && review.images.length > 0" class="review-images">
-            <strong>Slike:</strong>
+            <strong>Images:</strong>
             <div class="images-list">
               <a *ngFor="let img of review.images" [href]="img" target="_blank" class="image-link">
-                🖼️ Slika
+                🖼️ Image
               </a>
             </div>
           </div>
 
-          <div class="review-actions">
+          <div class="review-actions" *ngIf="authService.getRole() === 'tourist'">
             <button class="btn btn-sm btn-danger" (click)="deleteReview(review.id)">
-              Obriši
+              Delete Review
             </button>
           </div>
         </div>
       </div>
     </div>
   </div>
+</div>
 </div>

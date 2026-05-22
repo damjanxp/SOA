@@ -1,7 +1,7 @@
 <div class="tour-list-container">
   <div class="header">
-    <h1>Moje Ture</h1>
-    <button class="btn btn-primary" (click)="createNewTour()">+ Nova tura</button>
+    <h1>My Tours</h1>
+    <button class="btn btn-primary" (click)="createNewTour()">+ New Tour</button>
   </div>
 
   <div *ngIf="error" class="alert alert-danger">
@@ -9,11 +9,11 @@
   </div>
 
   <div *ngIf="loading" class="loading">
-    Učitavanje...
+    Loading...
   </div>
 
   <div *ngIf="!loading && tours.length === 0" class="empty-state">
-    <p>Nemate kreiranih tura. Kreirajte prvu turu!</p>
+    <p>You have no created tours. Create your first tour!</p>
   </div>
 
   <div *ngIf="!loading && tours.length > 0" class="tours-grid">
@@ -27,13 +27,13 @@
 
       <div class="tour-meta">
         <span class="meta-item">
-          <strong>Težina:</strong> {{ tour.difficulty }}
+          <strong>Difficulty:</strong> {{ tour.difficulty }}
         </span>
         <span class="meta-item">
-          <strong>Dužina:</strong> {{ tour.lengthKm }} km
+          <strong>Length:</strong> {{ tour.lengthKm }} km
         </span>
         <span class="meta-item">
-          <strong>Cena:</strong> {{ tour.price }} $
+          <strong>Price:</strong> {{ tour.price }} $
         </span>
       </div>
 
@@ -42,20 +42,16 @@
       </div>
 
       <div class="tour-keypoints">
-        <small><strong>Ključne tačke:</strong> {{ tour.keypoints?.length || 0 }}</small>
+        <small><strong>Key Points:</strong> {{ tour.keypoints?.length || 0 }}</small>
       </div>
 
       <div class="tour-actions">
-        <button class="btn btn-sm btn-info" (click)="viewTour(tour.id!)">Pregled</button>
-        <button class="btn btn-sm btn-warning" (click)="editTour(tour.id!)" 
-                [disabled]="tour.status === 'PUBLISHED'">
-          Uredi
-        </button>
+        <button class="btn btn-sm btn-info" (click)="viewTour(tour.id!)">View</button>
         <button class="btn btn-sm btn-success" (click)="publishTour(tour.id!)"
                 *ngIf="tour.status === 'DRAFT'">
-          Objavi
+          Publish
         </button>
-        <button class="btn btn-sm btn-danger" (click)="deleteTour(tour.id!)">Obriši</button>
+        <button class="btn btn-sm btn-danger" (click)="deleteTour(tour.id!)">Delete</button>
       </div>
     </div>
   </div>

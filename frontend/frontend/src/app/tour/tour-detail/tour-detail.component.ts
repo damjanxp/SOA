@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { TourService, Tour, Keypoint } from '../tour.service';
+import { TourService, Tour, Keypoint, Review } from '../tour.service';
 
 @Component({
   selector: 'app-tour-detail',
@@ -10,6 +10,7 @@ import { TourService, Tour, Keypoint } from '../tour.service';
 export class TourDetailComponent implements OnInit {
   tour: Tour | null = null;
   keypoints: Keypoint[] = [];
+  reviews: Review[] = [];
 
   loading = false;
   error = '';
@@ -27,6 +28,7 @@ export class TourDetailComponent implements OnInit {
       const id = params['id'];
       if (id) {
         this.loadTour(+id);
+        this.loadReviews(+id);
       }
     });
   }
@@ -34,7 +36,6 @@ export class TourDetailComponent implements OnInit {
   loadTour(id: number): void {
     this.loading = true;
     this.error = '';
-
     this.tourService.getTourById(id).subscribe({
       next: (data) => {
         this.tour = data;
@@ -49,26 +50,27 @@ export class TourDetailComponent implements OnInit {
     });
   }
 
+  loadReviews(id: number): void {
+    this.tourService.getReviews(id).subscribe({
+      next: (data) => this.reviews = data,
+      error: (err) => console.error(err)
+    });
+  }
+
+  getRatingStars(rating: number): string[] {
+    return Array.from({ length: 5 }, (_, i) => i < rating ? '★' : '☆');
+  }
+
   setActiveTab(tab: 'keypoints' | 'reviews'): void {
     this.activeTab = tab;
   }
 
   editTour(): void {
-    if (this.tour?.id) {
-      this.router.navigate(['/tours', this.tour.id, 'edit']);
-    }
+    if (this.tour?.id) this.router.navigate(['/tours', this.tour.id, 'edit']);
   }
 
   manageKeypoints(): void {
-    if (this.tour?.id) {
-      this.router.navigate(['/tours', this.tour.id, 'keypoints']);
-    }
-  }
-
-  manageReviews(): void {
-    if (this.tour?.id) {
-      this.router.navigate(['/tours', this.tour.id, 'reviews']);
-    }
+    if (this.tour?.id) this.router.navigate(['/tours', this.tour.id, 'keypoints']);
   }
 
   back(): void {
@@ -77,14 +79,10 @@ export class TourDetailComponent implements OnInit {
 
   getStatusClass(status: string): string {
     switch (status) {
-      case 'DRAFT':
-        return 'draft';
-      case 'PUBLISHED':
-        return 'published';
-      case 'ARCHIVED':
-        return 'archived';
-      default:
-        return '';
+      case 'DRAFT': return 'draft';
+      case 'PUBLISHED': return 'published';
+      case 'ARCHIVED': return 'archived';
+      default: return '';
     }
   }
 }
