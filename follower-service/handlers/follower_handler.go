@@ -290,3 +290,56 @@ func (h *FollowerHandler) IsFollowing(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"isFollowing": result})
 }
+
+// GetMyFollowing handles GET /api/followers/following
+// Returns the list of users that the authenticated user follows.
+func (h *FollowerHandler) GetMyFollowing(c *gin.Context) {
+	userId := c.GetString("userId")
+
+	ctx := context.Background()
+	session := h.Driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	defer session.Close(ctx)
+
+	type UserEntry struct {
+		UserID   string `json:"userId"`
+		Username string `json:"username"`
+	}
+
+	result, err := session.ExecuteRead(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
+		query := `
+			MATCH (me:User {userId: $userId})-[:FOLLOWS]->(u:User)
+			RETURN u
+		`
+		res, err := tx.Run(ctx, query, map[string]any{"userId": userId})
+		if err != nil {
+			return nil, err
+		}
+
+		var users []UserEntry
+		for res.Next(ctx) {
+			record := res.Record()
+			node, ok := record.Values[0].(neo4j.Node)
+			if !ok {
+				continue
+			}
+			uid, _ := node.Props["userId"].(string)
+			uname, _ := node.Props["username"].(string)
+			users = append(users, UserEntry{UserID: uid, Username: uname})
+		}
+		if err := res.Err(); err != nil {
+			return nil, err
+		}
+		return users, nil
+	})
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch following"})
+		return
+	}
+
+	list, _ := result.([]UserEntry)
+	if list == nil {
+		list = []UserEntry{}
+	}
+	c.JSON(http.StatusOK, gin.H{"followedUsers": list})
+}

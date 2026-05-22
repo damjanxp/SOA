@@ -180,6 +180,7 @@ export async function updateComment(
 /**
  * GET /api/blogs
  * Returns a paginated list of blogs. Requires authentication.
+ * For tourists without explicit authorId: only shows blogs from followed users.
  */
 export async function getBlogs(
   req: AuthRequest,
@@ -192,7 +193,40 @@ export async function getBlogs(
     const authorId =
       typeof req.query.authorId === "string" ? req.query.authorId : undefined;
 
-    const filter = authorId ? { authorId } : {};
+    let filter: any = authorId ? { authorId } : {};
+
+    // For tourists without explicit authorId, only show blogs from followed users
+    if (!authorId && req.user?.role === "tourist") {
+      try {
+        const followingResponse = await axios.get(
+          `${FOLLOWER_SERVICE_URL}/api/followers/following`,
+          {
+            headers: {
+              Authorization: req.headers.authorization ?? "",
+            },
+          }
+        );
+
+        const followedUsers = followingResponse.data?.followedUsers || [];
+        const followedUserIds = followedUsers.map((u: any) => u.userId);
+        
+        // Include own blog + blogs from followed users
+        filter = {
+          authorId: {
+            $in: [req.user.userId, ...followedUserIds],
+          },
+        };
+      } catch (err: any) {
+        if (err.response?.status === 401) {
+          res
+            .status(401)
+            .json({ message: "Unauthorized" });
+          return;
+        }
+        // For network errors, allow the request to continue with own blogs only
+        filter = { authorId: req.user.userId };
+      }
+    }
 
     const [blogs, total] = await Promise.all([
       Blog.find(filter)

@@ -28,7 +28,28 @@ $users = @(
     @{ username = "quinn";    email = "quinn@test.com";    password = "Test1234!"; role = "tourist" },
     @{ username = "rachel";   email = "rachel@test.com";   password = "Test1234!"; role = "tourist" },
     @{ username = "sam";      email = "sam@test.com";      password = "Test1234!"; role = "guide" },
-    @{ username = "tina";     email = "tina@test.com";     password = "Test1234!"; role = "tourist" }
+    @{ username = "tina";     email = "tina@test.com";     password = "Test1234!"; role = "tourist" },
+    # New 20 mock profiles
+    @{ username = "adam";     email = "adam@test.com";     password = "Test1234"; role = "tourist" },
+    @{ username = "bella";    email = "bella@test.com";    password = "Test1234"; role = "tourist" },
+    @{ username = "carter";   email = "carter@test.com";   password = "Test1234"; role = "tourist" },
+    @{ username = "dominic";  email = "dominic@test.com";  password = "Test1234"; role = "guide" },
+    @{ username = "emma";     email = "emma@test.com";     password = "Test1234"; role = "tourist" },
+    @{ username = "felix";    email = "felix@test.com";    password = "Test1234"; role = "tourist" },
+    @{ username = "giselle";  email = "giselle@test.com";  password = "Test1234"; role = "tourist" },
+    @{ username = "hudson";   email = "hudson@test.com";   password = "Test1234"; role = "guide" },
+    @{ username = "isabel";   email = "isabel@test.com";   password = "Test1234"; role = "tourist" },
+    @{ username = "jacob";    email = "jacob@test.com";    password = "Test1234"; role = "tourist" },
+    @{ username = "katherine";email = "katherine@test.com";password = "Test1234"; role = "guide" },
+    @{ username = "leo";      email = "leo@test.com";      password = "Test1234"; role = "tourist" },
+    @{ username = "maya";     email = "maya@test.com";     password = "Test1234"; role = "tourist" },
+    @{ username = "nathan";   email = "nathan@test.com";   password = "Test1234"; role = "tourist" },
+    @{ username = "owen";     email = "owen@test.com";     password = "Test1234"; role = "tourist" },
+    @{ username = "parker";   email = "parker@test.com";   password = "Test1234"; role = "guide" },
+    @{ username = "reid";     email = "reid@test.com";     password = "Test1234"; role = "tourist" },
+    @{ username = "sophia";   email = "sophia@test.com";   password = "Test1234"; role = "tourist" },
+    @{ username = "tyler";    email = "tyler@test.com";    password = "Test1234"; role = "tourist" },
+    @{ username = "vienna";   email = "vienna@test.com";   password = "Test1234"; role = "tourist" }
 )
 
 # ── Step 1: Register all users ────────────────────────────────────────────────
@@ -183,7 +204,65 @@ $follows = @(
     # Back-links so bridges get followers too
     @("alice",   "peter"),
     @("frank",   "quinn"),
-    @("kate",    "rachel")
+    @("kate",    "rachel"),
+    # New 20 profiles - Cluster 1 (adam, bella, carter, dominic, emma)
+    @("adam",    "bella"),
+    @("adam",    "carter"),
+    @("bella",   "carter"),
+    @("bella",   "dominic"),
+    @("carter",  "emma"),
+    @("dominic", "emma"),
+    @("dominic", "adam"),
+    @("emma",    "bella"),
+    # New Cluster 2 (felix, giselle, hudson, isabel, jacob)
+    @("felix",   "giselle"),
+    @("felix",   "hudson"),
+    @("giselle", "hudson"),
+    @("giselle", "isabel"),
+    @("hudson",  "jacob"),
+    @("isabel",  "jacob"),
+    @("isabel",  "felix"),
+    @("jacob",   "giselle"),
+    # New Cluster 3 (katherine, leo, maya, nathan, owen)
+    @("katherine", "leo"),
+    @("katherine", "maya"),
+    @("leo",       "maya"),
+    @("leo",       "nathan"),
+    @("maya",      "owen"),
+    @("nathan",    "owen"),
+    @("nathan",    "katherine"),
+    @("owen",      "leo"),
+    # New Cluster 4 (parker, reid, sophia, tyler, vienna)
+    @("parker",  "reid"),
+    @("parker",  "sophia"),
+    @("reid",    "sophia"),
+    @("reid",    "tyler"),
+    @("sophia",  "vienna"),
+    @("tyler",   "vienna"),
+    @("tyler",   "parker"),
+    @("vienna",  "reid"),
+    # Cross-cluster bridges for new users
+    @("adam",      "felix"),
+    @("bella",     "giselle"),
+    @("carter",    "katherine"),
+    @("dominic",   "hudson"),
+    @("emma",      "jacob"),
+    @("felix",     "parker"),
+    @("giselle",   "reid"),
+    @("hudson",    "sophia"),
+    @("isabel",    "leo"),
+    @("jacob",     "tyler"),
+    # Back-links for bridge relationships
+    @("felix",     "adam"),
+    @("giselle",   "bella"),
+    @("katherine", "carter"),
+    @("hudson",    "dominic"),
+    @("jacob",     "emma"),
+    @("parker",    "felix"),
+    @("reid",      "giselle"),
+    @("sophia",    "hudson"),
+    @("leo",       "isabel"),
+    @("tyler",     "jacob")
 )
 
 $ok  = 0
@@ -217,7 +296,8 @@ foreach ($pair in $follows) {
 }
 
 Write-Host "`n=== Done! $ok follows created, $err errors ===" -ForegroundColor Cyan
-Write-Host "Log in as any user (password: Test1234) to test recommendations." -ForegroundColor White
-Write-Host "Tip: Log in as 'peter' - he follows alice/frank/kate across all clusters" -ForegroundColor Yellow
+Write-Host "Log in as any original user (password: Test1234!) to test recommendations." -ForegroundColor White
+Write-Host "Log in as any new user (password: Test1234) to test new profiles." -ForegroundColor White
+Write-Host "New profiles: adam, bella, carter, dominic, emma, felix, giselle, hudson, isabel, jacob, katherine, leo, maya, nathan, owen, parker, reid, sophia, tyler, vienna" -ForegroundColor Yellow
 Write-Host ""
 
