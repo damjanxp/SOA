@@ -1,20 +1,21 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface Tour {
-  id: number;
+  id?: number;
   name: string;
   description: string;
-  authorId: number;
+  authorId?: string;
   difficulty: string;
-  tags: string[];
+  tags?: string[];
   status: string;
-  price: number;
-  lengthKm: number;
-  createdAt: string;
-  updatedAt: string;
-  keypoints: Keypoint[];
+  price?: number;
+  lengthKm?: number;
+  createdAt?: string;
+  updatedAt?: string;
+  keypoints?: Keypoint[];
 }
 
 export interface Keypoint {
@@ -42,7 +43,7 @@ export interface Review {
   providedIn: 'root'
 })
 export class TourService {
-  private apiUrl = 'http://localhost:8083/api/tours';
+  private apiUrl = `${environment.apiBase}/api/tours`;
 
   constructor(private http: HttpClient) { }
 

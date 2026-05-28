@@ -47,9 +47,10 @@ func (r *UserRepository) FindById(id string) (*models.User, error) {
 }
 
 func (r *UserRepository) BlockUser(userID string) error {
-	return r.DB.Model(&models.User{}).
-		Where("id = ?", userID).
-		Update("is_blocked", true).Error
+	return r.DB.Exec(
+		"UPDATE users SET is_blocked = NOT is_blocked WHERE id = ?",
+		userID,
+	).Error
 }
 
 func (r *UserRepository) GetProfileByUserID(userID string) (*models.Profile, error) {

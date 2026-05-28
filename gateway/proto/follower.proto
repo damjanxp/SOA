@@ -1,0 +1,32 @@
+syntax = "proto3";
+package follower;
+option go_package = "./pb/follower";
+
+service FollowerService {
+  rpc IsFollowing(IsFollowingRequest) returns (IsFollowingResponse);
+  rpc GetRecommendations(GetRecsRequest) returns (RecsResponse);
+}
+
+message IsFollowingRequest {
+  string follower_id = 1;
+  string target_user_id = 2;
+}
+
+message IsFollowingResponse {
+  bool is_following = 1;
+}
+
+message GetRecsRequest {
+  string user_id = 1;
+}
+
+message UserRec {
+  string user_id = 1;
+  string username = 2;
+  int32 mutual_count = 3;
+}
+
+message RecsResponse {
+  repeated UserRec recommendations = 1;
+}
+

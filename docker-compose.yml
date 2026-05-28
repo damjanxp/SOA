@@ -102,7 +102,7 @@ services:
       timeout: 5s
       retries: 5
     networks:
-    - tourism-network
+      - tourism-network
 
   tour-service:
     build: ./tour-service

@@ -1,0 +1,33 @@
+syntax = "proto3";
+package blog;
+option go_package = "./pb/blog";
+
+service BlogService {
+  rpc GetBlog(GetBlogRequest) returns (BlogResponse);
+  rpc GetBlogs(GetBlogsRequest) returns (BlogsResponse);
+}
+
+message GetBlogRequest {
+  string blog_id = 1;
+}
+
+message GetBlogsRequest {
+  string author_id = 1;
+  int32 page = 2;
+  int32 limit = 3;
+}
+
+message BlogResponse {
+  string id = 1;
+  string author_id = 2;
+  string title = 3;
+  string description = 4;
+  string created_at = 5;
+  int32 like_count = 6;
+}
+
+message BlogsResponse {
+  repeated BlogResponse blogs = 1;
+  int32 total = 2;
+}
+

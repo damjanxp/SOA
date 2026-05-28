@@ -1,0 +1,30 @@
+syntax = "proto3";
+package tour;
+option go_package = "./pb/tour";
+
+service TourService {
+  rpc GetPublishedTours(Empty) returns (ToursResponse);
+  rpc GetTourById(GetTourRequest) returns (TourResponse);
+}
+
+message Empty {}
+
+message GetTourRequest {
+  string tour_id = 1;
+}
+
+message TourResponse {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string difficulty = 4;
+  repeated string tags = 5;
+  string status = 6;
+  double price = 7;
+  double length_km = 8;
+}
+
+message ToursResponse {
+  repeated TourResponse tours = 1;
+}
+

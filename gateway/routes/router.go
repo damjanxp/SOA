@@ -139,8 +139,30 @@ func SetupRouter(r *gin.Engine) {
 		protected.Any("/blogs", ReverseProxy(blogURL))
 		protected.Any("/blogs/*path", ReverseProxy(blogURL))
 
-		// Tour service
-		protected.Any("/tours", ReverseProxy(tourURL))
-		protected.Any("/tours/*path", ReverseProxy(tourURL))
+		// Tour service — ture
+		protected.GET("/tours/published", ReverseProxy(tourURL))
+		protected.GET("/tours/my", ReverseProxy(tourURL))
+		protected.POST("/tours", ReverseProxy(tourURL))
+		protected.GET("/tours/:id", ReverseProxy(tourURL))
+		protected.PUT("/tours/:id", ReverseProxy(tourURL))
+		protected.DELETE("/tours/:id", ReverseProxy(tourURL))
+		protected.POST("/tours/:id/publish", ReverseProxy(tourURL))
+
+		// Tour service — kljucne tacke
+		protected.POST("/tours/:id/keypoints", ReverseProxy(tourURL))
+		protected.GET("/tours/:id/keypoints", ReverseProxy(tourURL))
+		protected.PUT("/tours/:id/keypoints/:kpId", ReverseProxy(tourURL))
+		protected.DELETE("/tours/:id/keypoints/:kpId", ReverseProxy(tourURL))
+
+		// Tour service — recenzije
+		protected.POST("/tours/:id/reviews", ReverseProxy(tourURL))
+		protected.GET("/tours/:id/reviews", ReverseProxy(tourURL))
+
+		// Tour service — korpa i kupovina
+		protected.POST("/tours/:id/cart", ReverseProxy(tourURL))
+		protected.GET("/cart", ReverseProxy(tourURL))
+		protected.DELETE("/cart/:itemId", ReverseProxy(tourURL))
+		protected.POST("/purchases", ReverseProxy(tourURL))
+		protected.GET("/purchases", ReverseProxy(tourURL))
 	}
 }
