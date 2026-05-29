@@ -57,6 +57,12 @@ public class Tour {
     @Column(nullable = false)
     private LocalDateTime updatedAt = LocalDateTime.now();
 
+    @Column
+    private LocalDateTime publishedAt;
+
+    @Column
+    private LocalDateTime archivedAt;
+
     @OneToMany(mappedBy = "tour", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Keypoint> keypoints = new ArrayList<>();
 

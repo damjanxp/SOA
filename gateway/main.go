@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/damjanxp/gateway/clients"
 	"github.com/damjanxp/gateway/routes"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -15,6 +16,10 @@ func main() {
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found, reading from environment")
 	}
+
+	// Initialize gRPC client for tour-service
+	tourGrpc := clients.NewTourGrpcClient()
+	defer tourGrpc.Close()
 
 	// Initialize Gin router with default middleware (Logger + Recovery)
 	r := gin.Default()
@@ -29,7 +34,7 @@ func main() {
 	}))
 
 	// Register all routes
-	routes.SetupRouter(r)
+	routes.SetupRouter(r, tourGrpc)
 
 	// Determine port
 	port := os.Getenv("PORT")

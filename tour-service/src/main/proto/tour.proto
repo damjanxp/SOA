@@ -1,6 +1,10 @@
 syntax = "proto3";
+
 package tour;
-option go_package = "./pb/tour";
+
+option java_package = "com.soa.grpc.proto";
+option java_outer_classname = "TourProto";
+option java_multiple_files = true;
 
 service TourService {
   rpc GetPublishedTours(Empty) returns (ToursResponse);

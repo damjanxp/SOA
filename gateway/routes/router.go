@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"os"
 
+	"github.com/damjanxp/gateway/clients"
 	"github.com/damjanxp/gateway/middleware"
 	"github.com/gin-gonic/gin"
 )
@@ -97,7 +98,7 @@ func corsMiddleware() gin.HandlerFunc {
 }
 
 // SetupRouter configures all gateway routes on the provided Gin engine.
-func SetupRouter(r *gin.Engine) {
+func SetupRouter(r *gin.Engine, tourGrpc *clients.TourGrpcClient) {
 	// Disable automatic redirect for trailing slashes — prevents Authorization header being
 	// dropped when e.g. /api/blogs is redirected to /api/blogs/ by Gin.
 	r.RedirectTrailingSlash = false
@@ -146,13 +147,63 @@ func SetupRouter(r *gin.Engine) {
 		protected.GET("/tours/:id", ReverseProxy(tourURL))
 		protected.PUT("/tours/:id", ReverseProxy(tourURL))
 		protected.DELETE("/tours/:id", ReverseProxy(tourURL))
-		protected.POST("/tours/:id/publish", ReverseProxy(tourURL))
+		protected.POST("/tours/:id/publish", func(c *gin.Context) {
+			tourId := c.Param("id")
+			authorIdRaw, _ := c.Get("userId")
+			authorId, _ := authorIdRaw.(string)
+
+			resp, err := tourGrpc.PublishTour(c.Request.Context(), tourId, authorId)
+			if err != nil {
+				c.JSON(http.StatusBadGateway, gin.H{"error": "gRPC error: " + err.Error()})
+				return
+			}
+			if !resp.GetSuccess() {
+				c.JSON(http.StatusBadRequest, gin.H{"error": resp.GetMessage()})
+				return
+			}
+			c.JSON(http.StatusOK, gin.H{"status": resp.GetStatus(), "tourId": resp.GetTourId()})
+		})
+
+		protected.POST("/tours/:id/archive", func(c *gin.Context) {
+			tourId := c.Param("id")
+
+			resp, err := tourGrpc.ArchiveTour(c.Request.Context(), tourId)
+			if err != nil {
+				c.JSON(http.StatusBadGateway, gin.H{"error": "gRPC error: " + err.Error()})
+				return
+			}
+			if !resp.GetSuccess() {
+				c.JSON(http.StatusBadRequest, gin.H{"error": resp.GetMessage()})
+				return
+			}
+			c.JSON(http.StatusOK, gin.H{"status": resp.GetStatus(), "tourId": resp.GetTourId()})
+		})
+
+		protected.POST("/tours/:id/reactivate", func(c *gin.Context) {
+			tourId := c.Param("id")
+
+			resp, err := tourGrpc.ReactivateTour(c.Request.Context(), tourId)
+			if err != nil {
+				c.JSON(http.StatusBadGateway, gin.H{"error": "gRPC error: " + err.Error()})
+				return
+			}
+			if !resp.GetSuccess() {
+				c.JSON(http.StatusBadRequest, gin.H{"error": resp.GetMessage()})
+				return
+			}
+			c.JSON(http.StatusOK, gin.H{"status": resp.GetStatus(), "tourId": resp.GetTourId()})
+		})
 
 		// Tour service — kljucne tacke
 		protected.POST("/tours/:id/keypoints", ReverseProxy(tourURL))
 		protected.GET("/tours/:id/keypoints", ReverseProxy(tourURL))
 		protected.PUT("/tours/:id/keypoints/:kpId", ReverseProxy(tourURL))
 		protected.DELETE("/tours/:id/keypoints/:kpId", ReverseProxy(tourURL))
+
+		// Transport times
+		protected.POST("/tours/:id/transport-times", ReverseProxy(tourURL))
+		protected.GET("/tours/:id/transport-times", ReverseProxy(tourURL))
+		protected.DELETE("/tours/:id/transport-times/:ttId", ReverseProxy(tourURL))
 
 		// Tour service — recenzije
 		protected.POST("/tours/:id/reviews", ReverseProxy(tourURL))

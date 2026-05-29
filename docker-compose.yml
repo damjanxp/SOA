@@ -108,6 +108,7 @@ services:
     build: ./tour-service
     ports:
       - "8083:8083"
+      - "9093:9093"
     env_file:
       - ./tour-service/.env
     environment:
@@ -131,6 +132,7 @@ services:
       - BLOG_SERVICE_URL=http://blog-service:8082
       - FOLLOWER_SERVICE_URL=http://follower-service:8084
       - TOUR_SERVICE_URL=http://tour-service:8083
+      - TOUR_GRPC_URL=tour-service:9093
     depends_on:
       - stakeholders-service
       - blog-service
