@@ -6,6 +6,7 @@ import com.soa.models.Keypoint;
 import com.soa.models.Tour;
 import com.soa.repositories.KeypointRepository;
 import com.soa.repositories.TourRepository;
+import com.soa.util.HaversineUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,6 +45,7 @@ public class KeypointService {
                 .build();
 
         Keypoint savedKeypoint = keypointRepository.save(keypoint);
+        recalculateTourLength(tour);
         return mapToResponse(savedKeypoint);
     }
 
@@ -93,6 +95,7 @@ public class KeypointService {
         keypoint.setOrderIndex(request.getOrderIndex());
 
         Keypoint updatedKeypoint = keypointRepository.save(keypoint);
+        recalculateTourLength(tour);
         return mapToResponse(updatedKeypoint);
     }
 
@@ -115,6 +118,19 @@ public class KeypointService {
         }
 
         keypointRepository.delete(keypoint);
+        recalculateTourLength(tour);
+    }
+
+    private void recalculateTourLength(Tour tour) {
+        List<Keypoint> keypoints = keypointRepository.findByTourIdOrderByOrderIndex(tour.getId());
+        double totalKm = 0.0;
+        for (int i = 0; i < keypoints.size() - 1; i++) {
+            Keypoint a = keypoints.get(i);
+            Keypoint b = keypoints.get(i + 1);
+            totalKm += HaversineUtil.calculateDistance(a.getLat(), a.getLon(), b.getLat(), b.getLon());
+        }
+        tour.setLengthKm(totalKm);
+        tourRepository.save(tour);
     }
 
     private KeypointResponse mapToResponse(Keypoint keypoint) {

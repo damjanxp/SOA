@@ -126,16 +126,17 @@
             <version>${grpc.version}</version>
         </dependency>
 
-        <!-- Annotations (needed by protoc-generated code) -->
+        <!-- Required for generated stub code on Java 9+ -->
         <dependency>
-            <groupId>javax.annotation</groupId>
-            <artifactId>javax.annotation-api</artifactId>
-            <version>1.3.2</version>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
+            <version>2.1.1</version>
         </dependency>
     </dependencies>
 
     <build>
         <extensions>
+            <!-- Detects OS/arch so protobuf plugin can download the right protoc binary -->
             <extension>
                 <groupId>kr.motd.maven</groupId>
                 <artifactId>os-maven-plugin</artifactId>

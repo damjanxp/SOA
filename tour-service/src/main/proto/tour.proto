@@ -2,17 +2,21 @@ syntax = "proto3";
 
 package tour;
 
-option java_package = "com.soa.grpc.proto";
+option java_package = "com.soa.grpc";
 option java_outer_classname = "TourProto";
 option java_multiple_files = true;
 
 service TourService {
   rpc GetPublishedTours(Empty) returns (ToursResponse);
   rpc GetTourById(GetTourRequest) returns (TourResponse);
+  rpc GetTourKeyPoints(GetKeyPointsRequest) returns (GetKeyPointsResponse);
+  rpc AddTransportTime(AddTransportTimeRequest) returns (AddTransportTimeResponse);
   rpc PublishTour(PublishTourRequest) returns (TourActionResponse);
   rpc ArchiveTour(TourIdRequest) returns (TourActionResponse);
   rpc ReactivateTour(TourIdRequest) returns (TourActionResponse);
 }
+
+// ── existing messages ────────────────────────────────────────────────────────
 
 message Empty {}
 
@@ -35,6 +39,52 @@ message ToursResponse {
   repeated TourResponse tours = 1;
 }
 
+// ── GetTourKeyPoints ─────────────────────────────────────────────────────────
+
+message GetKeyPointsRequest {
+  string tour_id = 1;
+  string tourist_id = 2;
+}
+
+message KeyPointMessage {
+  string id = 1;
+  string tour_id = 2;
+  string name = 3;
+  string description = 4;
+  string image_url = 5;
+  double lat = 6;
+  double lon = 7;
+  int32 order_index = 8;
+}
+
+message GetKeyPointsResponse {
+  repeated KeyPointMessage keypoints = 1;
+  bool all_visible = 2;
+}
+
+// ── AddTransportTime ─────────────────────────────────────────────────────────
+
+message AddTransportTimeRequest {
+  string tour_id = 1;
+  string transport_type = 2;
+  int32 duration_minutes = 3;
+}
+
+message TransportTimeMessage {
+  string id = 1;
+  string tour_id = 2;
+  string transport_type = 3;
+  int32 duration_minutes = 4;
+}
+
+message AddTransportTimeResponse {
+  bool success = 1;
+  string message = 2;
+  TransportTimeMessage transport_time = 3;
+}
+
+// ── PublishTour / ArchiveTour / ReactivateTour messages ───────────────────────
+
 message PublishTourRequest {
   string tour_id = 1;
   string author_id = 2;
@@ -50,4 +100,3 @@ message TourActionResponse {
   string tour_id = 3;
   string status = 4;
 }
-

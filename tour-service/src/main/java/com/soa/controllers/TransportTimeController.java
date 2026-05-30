@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -25,31 +26,45 @@ public class TransportTimeController {
             @Valid @RequestBody CreateTransportTimeRequest request,
             HttpServletRequest httpRequest) {
 
-        String userId = getUserId(httpRequest);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(transportTimeService.addTransportTime(tourId, request, userId));
+        String userId = getUserIdFromRequest(httpRequest);
+        TransportTimeResponse response = transportTimeService.addTransportTime(tourId, request, userId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping
     public ResponseEntity<List<TransportTimeResponse>> getTransportTimes(@PathVariable Long tourId) {
-        return ResponseEntity.ok(transportTimeService.getTransportTimes(tourId));
+        List<TransportTimeResponse> times = transportTimeService.getTransportTimesForTour(tourId);
+        return ResponseEntity.ok(times);
     }
 
-    @DeleteMapping("/{ttId}")
-    public ResponseEntity<Void> deleteTransportTime(
+    @PutMapping("/{id}")
+    public ResponseEntity<TransportTimeResponse> updateTransportTime(
             @PathVariable Long tourId,
-            @PathVariable Long ttId,
+            @PathVariable Long id,
+            @Valid @RequestBody CreateTransportTimeRequest request,
             HttpServletRequest httpRequest) {
 
-        String userId = getUserId(httpRequest);
-        transportTimeService.deleteTransportTime(tourId, ttId, userId);
+        String userId = getUserIdFromRequest(httpRequest);
+        TransportTimeResponse response = transportTimeService.updateTransportTime(tourId, id, request, userId);
+        return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteTransportTime(
+            @PathVariable Long tourId,
+            @PathVariable Long id,
+            HttpServletRequest httpRequest) {
+
+        String userId = getUserIdFromRequest(httpRequest);
+        transportTimeService.deleteTransportTime(tourId, id, userId);
         return ResponseEntity.noContent().build();
     }
 
-    private String getUserId(HttpServletRequest request) {
-        Object userId = request.getAttribute("userId");
-        if (userId == null) throw new RuntimeException("Unauthorized: User ID not found");
-        return (String) userId;
+    private String getUserIdFromRequest(HttpServletRequest request) {
+        Object userIdObj = request.getAttribute("userId");
+        if (userIdObj == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized: User ID not found");
+        }
+        return (String) userIdObj;
     }
 }
-

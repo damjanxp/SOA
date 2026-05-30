@@ -5,11 +5,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "tour_purchase_tokens",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"tourist_id", "tour_id"}))
+       uniqueConstraints = @UniqueConstraint(columnNames = {"tourist_id", "tour_id"}))
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -27,7 +29,19 @@ public class TourPurchaseToken {
     @JoinColumn(name = "tour_id", nullable = false)
     private Tour tour;
 
-    @Column(name = "purchased_at", nullable = false)
-    private LocalDateTime purchasedAt = LocalDateTime.now();
-}
+    @Column(nullable = false, unique = true)
+    private String token;
 
+    @Column(name = "purchased_at", nullable = false)
+    private LocalDateTime purchasedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        if (token == null) {
+            token = UUID.randomUUID().toString();
+        }
+        if (purchasedAt == null) {
+            purchasedAt = LocalDateTime.now();
+        }
+    }
+}

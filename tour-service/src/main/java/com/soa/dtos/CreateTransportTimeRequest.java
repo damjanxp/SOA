@@ -1,7 +1,8 @@
 package com.soa.dtos;
 
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,11 +14,10 @@ import lombok.NoArgsConstructor;
 @Builder
 public class CreateTransportTimeRequest {
 
-    @NotNull(message = "Transport type is required (WALK, BIKE, CAR)")
+    @NotBlank(message = "Transport type is required")
     private String transportType;
 
-    @NotNull(message = "Time in minutes is required")
-    @Positive(message = "Time must be positive")
-    private Double timeMinutes;
+    @NotNull(message = "Duration in minutes is required")
+    @Min(value = 1, message = "Duration must be at least 1 minute")
+    private Integer durationMinutes;
 }
-

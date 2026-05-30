@@ -1,40 +1,152 @@
-package com.soa.grpc;
+﻿package com.soa.grpc;
 
-import com.soa.grpc.proto.PublishTourRequest;
-import com.soa.grpc.proto.TourActionResponse;
-import com.soa.grpc.proto.TourIdRequest;
-import com.soa.grpc.proto.TourServiceGrpc;
+import com.soa.dtos.CreateTransportTimeRequest;
+import com.soa.dtos.KeypointResponse;
+import com.soa.dtos.TransportTimeResponse;
 import com.soa.models.Tour;
 import com.soa.models.Tour.TourStatus;
 import com.soa.repositories.KeypointRepository;
 import com.soa.repositories.TourRepository;
 import com.soa.repositories.TransportTimeRepository;
+import com.soa.services.KeypointService;
+import com.soa.services.TransportTimeService;
+import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
+import lombok.RequiredArgsConstructor;
 import net.devh.boot.grpc.server.service.GrpcService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @GrpcService
 @Transactional
+@RequiredArgsConstructor
 public class TourGrpcService extends TourServiceGrpc.TourServiceImplBase {
 
     private static final Logger log = LoggerFactory.getLogger(TourGrpcService.class);
 
-    @Autowired
-    private TourRepository tourRepository;
+    private final KeypointService keypointService;
+    private final TransportTimeService transportTimeService;
+    private final TourRepository tourRepository;
+    private final KeypointRepository keypointRepository;
+    private final TransportTimeRepository transportTimeRepository;
 
-    @Autowired
-    private KeypointRepository keypointRepository;
+    // â”€â”€ GetTourKeyPoints â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-    @Autowired
-    private TransportTimeRepository transportTimeRepository;
+    @Override
+    public void getTourKeyPoints(GetKeyPointsRequest request,
+                                 StreamObserver<GetKeyPointsResponse> responseObserver) {
+        try {
+            Long tourId = Long.parseLong(request.getTourId());
+            String touristId = request.getTouristId();
 
-    // ─── PublishTour ─────────────────────────────────────────────────────────────
+            // TODO: replace with real TourPurchaseToken check once Purchase service is ready
+            boolean purchased = hasPurchasedTour(touristId, tourId);
+
+            List<KeypointResponse> all = keypointService.getKeypointsByTourId(tourId);
+
+            // If the tourist has not purchased: expose only the first keypoint (order 0)
+            List<KeypointResponse> visible = purchased
+                    ? all
+                    : all.stream()
+                          .filter(kp -> kp.getOrderIndex() != null && kp.getOrderIndex() == 0)
+                          .toList();
+
+            List<KeyPointMessage> messages = visible.stream()
+                    .map(kp -> KeyPointMessage.newBuilder()
+                            .setId(String.valueOf(kp.getId()))
+                            .setTourId(request.getTourId())
+                            .setName(kp.getName() != null ? kp.getName() : "")
+                            .setDescription(kp.getDescription() != null ? kp.getDescription() : "")
+                            .setImageUrl(kp.getImageUrl() != null ? kp.getImageUrl() : "")
+                            .setLat(kp.getLat() != null ? kp.getLat() : 0.0)
+                            .setLon(kp.getLon() != null ? kp.getLon() : 0.0)
+                            .setOrderIndex(kp.getOrderIndex() != null ? kp.getOrderIndex() : 0)
+                            .build())
+                    .toList();
+
+            GetKeyPointsResponse response = GetKeyPointsResponse.newBuilder()
+                    .addAllKeypoints(messages)
+                    .setAllVisible(purchased)
+                    .build();
+
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+
+        } catch (NumberFormatException e) {
+            responseObserver.onError(Status.INVALID_ARGUMENT
+                    .withDescription("Invalid tourId format: " + request.getTourId())
+                    .asRuntimeException());
+        } catch (RuntimeException e) {
+            responseObserver.onError(Status.INTERNAL
+                    .withDescription(e.getMessage())
+                    .asRuntimeException());
+        }
+    }
+
+    // â”€â”€ AddTransportTime â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    @Override
+    public void addTransportTime(AddTransportTimeRequest request,
+                                 StreamObserver<AddTransportTimeResponse> responseObserver) {
+        try {
+            Long tourId = Long.parseLong(request.getTourId());
+
+            // The gateway already authenticated the caller; use the tour's own authorId
+            // so the service-level ownership guard passes for this trusted server-to-server call.
+            Tour tour = tourRepository.findById(tourId)
+                    .orElseThrow(() -> new RuntimeException("Tour not found with id: " + tourId));
+
+            CreateTransportTimeRequest dto = CreateTransportTimeRequest.builder()
+                    .transportType(request.getTransportType())
+                    .durationMinutes(request.getDurationMinutes())
+                    .build();
+
+            TransportTimeResponse saved =
+                    transportTimeService.addTransportTime(tourId, dto, tour.getAuthorId());
+
+            TransportTimeMessage ttMessage = TransportTimeMessage.newBuilder()
+                    .setId(String.valueOf(saved.getId()))
+                    .setTourId(String.valueOf(saved.getTourId()))
+                    .setTransportType(saved.getTransportType())
+                    .setDurationMinutes(saved.getDurationMinutes())
+                    .build();
+
+            AddTransportTimeResponse response = AddTransportTimeResponse.newBuilder()
+                    .setSuccess(true)
+                    .setMessage("Transport time added successfully")
+                    .setTransportTime(ttMessage)
+                    .build();
+
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+
+        } catch (NumberFormatException e) {
+            responseObserver.onError(Status.INVALID_ARGUMENT
+                    .withDescription("Invalid tourId format: " + request.getTourId())
+                    .asRuntimeException());
+        } catch (RuntimeException e) {
+            responseObserver.onError(Status.INTERNAL
+                    .withDescription(e.getMessage())
+                    .asRuntimeException());
+        }
+    }
+
+    // â”€â”€ helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    /**
+     * Determines whether the given tourist has purchased the tour.
+     * TODO: replace with real TourPurchaseToken check once Purchase service is ready
+     */
+    private boolean hasPurchasedTour(String touristId, Long tourId) {
+        return true;
+    }
+
+    // â”€â”€ PublishTour â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     @Override
     public void publishTour(PublishTourRequest request,
@@ -42,74 +154,44 @@ public class TourGrpcService extends TourServiceGrpc.TourServiceImplBase {
         log.info("gRPC publishTour called for tourId={}", request.getTourId());
 
         try {
-            // 1. Pronadji turu po tourId
             Long tourId = Long.parseLong(request.getTourId());
             Optional<Tour> tourOpt = tourRepository.findById(tourId);
 
             if (tourOpt.isEmpty()) {
-                responseObserver.onNext(TourActionResponse.newBuilder()
-                        .setSuccess(false)
-                        .setMessage("Tour not found")
-                        .setTourId(request.getTourId())
-                        .build());
-                responseObserver.onCompleted();
+                respond(responseObserver, false, "Tour not found", request.getTourId(), "");
                 return;
             }
 
             Tour tour = tourOpt.get();
 
-            // 2. Provjeri authorId
             log.info("authorId from DB: '{}', authorId from request: '{}'", tour.getAuthorId(), request.getAuthorId());
             if (!tour.getAuthorId().equals(request.getAuthorId())) {
-                responseObserver.onNext(TourActionResponse.newBuilder()
-                        .setSuccess(false)
-                        .setMessage("Not authorized")
-                        .setTourId(request.getTourId())
-                        .setStatus(tour.getStatus().name())
-                        .build());
-                responseObserver.onCompleted();
+                respond(responseObserver, false, "Not authorized", request.getTourId(), tour.getStatus().name());
                 return;
             }
 
-            // 3. Provjeri status == DRAFT
             if (tour.getStatus() != TourStatus.DRAFT) {
-                responseObserver.onNext(TourActionResponse.newBuilder()
-                        .setSuccess(false)
-                        .setMessage("Only draft tours can be published")
-                        .setTourId(request.getTourId())
-                        .setStatus(tour.getStatus().name())
-                        .build());
-                responseObserver.onCompleted();
+                respond(responseObserver, false, "Only draft tours can be published",
+                        request.getTourId(), tour.getStatus().name());
                 return;
             }
 
-            // 4. Provjeri broj kljucnih tacaka (min 2)
             long keypointCount = keypointRepository.countByTourId(tour.getId());
             if (keypointCount < 2) {
-                responseObserver.onNext(TourActionResponse.newBuilder()
-                        .setSuccess(false)
-                        .setMessage("Tour must have at least 2 keypoints before publishing")
-                        .setTourId(request.getTourId())
-                        .setStatus(tour.getStatus().name())
-                        .build());
-                responseObserver.onCompleted();
+                respond(responseObserver, false,
+                        "Tour must have at least 2 keypoints before publishing",
+                        request.getTourId(), tour.getStatus().name());
                 return;
             }
 
-            // 5. Provjeri transport vremena (min 1)
             long transportCount = transportTimeRepository.countByTourId(tour.getId());
             if (transportCount < 1) {
-                responseObserver.onNext(TourActionResponse.newBuilder()
-                        .setSuccess(false)
-                        .setMessage("Tour must have at least one transport time (WALK, BIKE or CAR) before publishing")
-                        .setTourId(request.getTourId())
-                        .setStatus(tour.getStatus().name())
-                        .build());
-                responseObserver.onCompleted();
+                respond(responseObserver, false,
+                        "Tour must have at least one transport time (WALKING, BICYCLE or CAR) before publishing",
+                        request.getTourId(), tour.getStatus().name());
                 return;
             }
 
-            // 6. Provjeri obavezna polja: name, description, difficulty, tags
             boolean missingFields = isBlank(tour.getName())
                     || isBlank(tour.getDescription())
                     || tour.getDifficulty() == null
@@ -117,50 +199,29 @@ public class TourGrpcService extends TourServiceGrpc.TourServiceImplBase {
                     || tour.getTags().isEmpty();
 
             if (missingFields) {
-                responseObserver.onNext(TourActionResponse.newBuilder()
-                        .setSuccess(false)
-                        .setMessage("Tour is missing required fields: name, description, difficulty, tags")
-                        .setTourId(request.getTourId())
-                        .setStatus(tour.getStatus().name())
-                        .build());
-                responseObserver.onCompleted();
+                respond(responseObserver, false,
+                        "Tour is missing required fields: name, description, difficulty, tags",
+                        request.getTourId(), tour.getStatus().name());
                 return;
             }
 
-            // 7. Sve validacije prosle — objavi turu
             tour.setStatus(TourStatus.PUBLISHED);
             tour.setPublishedAt(LocalDateTime.now());
             tourRepository.save(tour);
 
             log.info("Tour {} published successfully", tourId);
-            responseObserver.onNext(TourActionResponse.newBuilder()
-                    .setSuccess(true)
-                    .setMessage("Tour published successfully")
-                    .setTourId(request.getTourId())
-                    .setStatus("PUBLISHED")
-                    .build());
-            responseObserver.onCompleted();
+            respond(responseObserver, true, "Tour published successfully", request.getTourId(), "PUBLISHED");
 
         } catch (NumberFormatException e) {
             log.error("Invalid tour ID format: {}", request.getTourId());
-            responseObserver.onNext(TourActionResponse.newBuilder()
-                    .setSuccess(false)
-                    .setMessage("Invalid tour ID format")
-                    .setTourId(request.getTourId())
-                    .build());
-            responseObserver.onCompleted();
+            respond(responseObserver, false, "Invalid tour ID format", request.getTourId(), "");
         } catch (Exception e) {
             log.error("Error publishing tour {}: {}", request.getTourId(), e.getMessage(), e);
-            responseObserver.onNext(TourActionResponse.newBuilder()
-                    .setSuccess(false)
-                    .setMessage("Internal error: " + e.getMessage())
-                    .setTourId(request.getTourId())
-                    .build());
-            responseObserver.onCompleted();
+            respond(responseObserver, false, "Internal error: " + e.getMessage(), request.getTourId(), "");
         }
     }
 
-    // ─── ArchiveTour ─────────────────────────────────────────────────────────────
+    // â”€â”€ ArchiveTour â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     @Override
     public void archiveTour(TourIdRequest request,
@@ -200,7 +261,7 @@ public class TourGrpcService extends TourServiceGrpc.TourServiceImplBase {
         }
     }
 
-    // ─── ReactivateTour ──────────────────────────────────────────────────────────
+    // â”€â”€ ReactivateTour â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     @Override
     public void reactivateTour(TourIdRequest request,
@@ -240,7 +301,7 @@ public class TourGrpcService extends TourServiceGrpc.TourServiceImplBase {
         }
     }
 
-    // ─── Helper ──────────────────────────────────────────────────────────────────
+    // â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private void respond(StreamObserver<TourActionResponse> observer,
                          boolean success, String message, String tourId, String status) {
@@ -258,4 +319,3 @@ public class TourGrpcService extends TourServiceGrpc.TourServiceImplBase {
         return s == null || s.isBlank();
     }
 }
-

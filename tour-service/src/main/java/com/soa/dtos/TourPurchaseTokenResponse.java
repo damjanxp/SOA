@@ -5,13 +5,16 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class TransportTimeResponse {
+public class TourPurchaseTokenResponse {
     private Long id;
+    private String touristId;
     private Long tourId;
-    private String transportType;
-    private Integer durationMinutes;
+    private String token;
+    private LocalDateTime purchasedAt;
 }

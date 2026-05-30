@@ -351,6 +351,7 @@ public class TourService {
                 .lengthKm(tour.getLengthKm())
                 .createdAt(tour.getCreatedAt())
                 .updatedAt(tour.getUpdatedAt())
+                .archivedAt(tour.getArchivedAt())
                 .keypoints(keypointResponses)
                 .build();
     }
