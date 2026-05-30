@@ -51,6 +51,9 @@ public class Tour {
     @Column(name = "length_km")
     private Double lengthKm;
 
+    @Column(name = "archived_at")
+    private LocalDateTime archivedAt;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 

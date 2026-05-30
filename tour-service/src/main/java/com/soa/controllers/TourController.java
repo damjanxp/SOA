@@ -100,6 +100,32 @@ public class TourController {
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * Archive tour (POST /api/tours/{id}/archive)
+     */
+    @PostMapping("/{id}/archive")
+    public ResponseEntity<TourResponse> archiveTour(
+            @PathVariable Long id,
+            HttpServletRequest httpRequest) {
+
+        String userId = getUserIdFromRequest(httpRequest);
+        TourResponse response = tourService.archiveTour(id, userId);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Reactivate tour (POST /api/tours/{id}/reactivate)
+     */
+    @PostMapping("/{id}/reactivate")
+    public ResponseEntity<TourResponse> reactivateTour(
+            @PathVariable Long id,
+            HttpServletRequest httpRequest) {
+
+        String userId = getUserIdFromRequest(httpRequest);
+        TourResponse response = tourService.reactivateTour(id, userId);
+        return ResponseEntity.ok(response);
+    }
+
     private String getUserIdFromRequest(HttpServletRequest request) {
         Object userIdObj = request.getAttribute("userId");
         if (userIdObj == null) {

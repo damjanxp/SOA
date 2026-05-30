@@ -111,6 +111,40 @@ public class TourService {
         return mapToResponse(updatedTour);
     }
 
+    /**
+     * Archive tour
+     */
+    public TourResponse archiveTour(Long tourId, String authorId) {
+        Tour tour = tourRepository.findById(tourId)
+                .orElseThrow(() -> new RuntimeException("Tour not found with id: " + tourId));
+
+        if (!tour.getAuthorId().equals(authorId)) {
+            throw new RuntimeException("Unauthorized: Only tour author can archive");
+        }
+
+        tour.setStatus(Tour.TourStatus.ARCHIVED);
+        tour.setArchivedAt(java.time.LocalDateTime.now());
+        Tour updatedTour = tourRepository.save(tour);
+        return mapToResponse(updatedTour);
+    }
+
+    /**
+     * Reactivate tour (ARCHIVED → PUBLISHED)
+     */
+    public TourResponse reactivateTour(Long tourId, String authorId) {
+        Tour tour = tourRepository.findById(tourId)
+                .orElseThrow(() -> new RuntimeException("Tour not found with id: " + tourId));
+
+        if (!tour.getAuthorId().equals(authorId)) {
+            throw new RuntimeException("Unauthorized: Only tour author can reactivate");
+        }
+
+        tour.setStatus(Tour.TourStatus.PUBLISHED);
+        tour.setArchivedAt(null);
+        Tour updatedTour = tourRepository.save(tour);
+        return mapToResponse(updatedTour);
+    }
+
     private TourResponse mapToResponse(Tour tour) {
         List<KeypointResponse> keypointResponses = tour.getKeypoints() != null ?
                 tour.getKeypoints().stream()
@@ -138,6 +172,7 @@ public class TourService {
                 .lengthKm(tour.getLengthKm())
                 .createdAt(tour.getCreatedAt())
                 .updatedAt(tour.getUpdatedAt())
+                .archivedAt(tour.getArchivedAt())
                 .keypoints(keypointResponses)
                 .build();
     }

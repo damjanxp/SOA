@@ -24,5 +24,6 @@ public class TourResponse {
     private Double lengthKm;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private LocalDateTime archivedAt;
     private List<KeypointResponse> keypoints;
 }
