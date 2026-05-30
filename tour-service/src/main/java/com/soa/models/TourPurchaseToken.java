@@ -25,13 +25,14 @@ public class TourPurchaseToken {
     @Column(name = "tourist_id", nullable = false)
     private String touristId;
 
-    @Column(name = "tour_id", nullable = false)
-    private Long tourId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tour_id", nullable = false)
+    private Tour tour;
 
     @Column(nullable = false, unique = true)
     private String token;
 
-    @Column(nullable = false)
+    @Column(name = "purchased_at", nullable = false)
     private LocalDateTime purchasedAt;
 
     @PrePersist
@@ -39,6 +40,8 @@ public class TourPurchaseToken {
         if (token == null) {
             token = UUID.randomUUID().toString();
         }
-        purchasedAt = LocalDateTime.now();
+        if (purchasedAt == null) {
+            purchasedAt = LocalDateTime.now();
+        }
     }
 }

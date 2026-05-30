@@ -11,6 +11,9 @@ service TourService {
   rpc GetTourById(GetTourRequest) returns (TourResponse);
   rpc GetTourKeyPoints(GetKeyPointsRequest) returns (GetKeyPointsResponse);
   rpc AddTransportTime(AddTransportTimeRequest) returns (AddTransportTimeResponse);
+  rpc PublishTour(PublishTourRequest) returns (TourActionResponse);
+  rpc ArchiveTour(TourIdRequest) returns (TourActionResponse);
+  rpc ReactivateTour(TourIdRequest) returns (TourActionResponse);
 }
 
 // ── existing messages ────────────────────────────────────────────────────────
@@ -78,4 +81,22 @@ message AddTransportTimeResponse {
   bool success = 1;
   string message = 2;
   TransportTimeMessage transport_time = 3;
+}
+
+// ── PublishTour / ArchiveTour / ReactivateTour messages ───────────────────────
+
+message PublishTourRequest {
+  string tour_id = 1;
+  string author_id = 2;
+}
+
+message TourIdRequest {
+  string tour_id = 1;
+}
+
+message TourActionResponse {
+  bool success = 1;
+  string message = 2;
+  string tour_id = 3;
+  string status = 4;
 }

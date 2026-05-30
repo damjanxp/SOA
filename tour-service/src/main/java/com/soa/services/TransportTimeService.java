@@ -7,8 +7,10 @@ import com.soa.models.TransportTime;
 import com.soa.repositories.TourRepository;
 import com.soa.repositories.TransportTimeRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,10 +25,10 @@ public class TransportTimeService {
 
     public TransportTimeResponse addTransportTime(Long tourId, CreateTransportTimeRequest request, String authorId) {
         Tour tour = tourRepository.findById(tourId)
-                .orElseThrow(() -> new RuntimeException("Tour not found with id: " + tourId));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Tour not found with id: " + tourId));
 
         if (!tour.getAuthorId().equals(authorId)) {
-            throw new RuntimeException("Unauthorized: Only tour author can add transport times");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only tour author can add transport times");
         }
 
         TransportTime transportTime = TransportTime.builder()
@@ -41,7 +43,7 @@ public class TransportTimeService {
     @Transactional(readOnly = true)
     public List<TransportTimeResponse> getTransportTimesForTour(Long tourId) {
         if (!tourRepository.existsById(tourId)) {
-            throw new RuntimeException("Tour not found with id: " + tourId);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Tour not found with id: " + tourId);
         }
         return transportTimeRepository.findByTourId(tourId)
                 .stream()
@@ -52,17 +54,17 @@ public class TransportTimeService {
     public TransportTimeResponse updateTransportTime(Long tourId, Long id,
                                                      CreateTransportTimeRequest request, String authorId) {
         Tour tour = tourRepository.findById(tourId)
-                .orElseThrow(() -> new RuntimeException("Tour not found with id: " + tourId));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Tour not found with id: " + tourId));
 
         if (!tour.getAuthorId().equals(authorId)) {
-            throw new RuntimeException("Unauthorized: Only tour author can update transport times");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only tour author can update transport times");
         }
 
         TransportTime transportTime = transportTimeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("TransportTime not found with id: " + id));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "TransportTime not found with id: " + id));
 
         if (!transportTime.getTour().getId().equals(tourId)) {
-            throw new RuntimeException("TransportTime does not belong to this tour");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "TransportTime does not belong to this tour");
         }
 
         transportTime.setTransportType(parseTransportType(request.getTransportType()));
@@ -73,17 +75,17 @@ public class TransportTimeService {
 
     public void deleteTransportTime(Long tourId, Long id, String authorId) {
         Tour tour = tourRepository.findById(tourId)
-                .orElseThrow(() -> new RuntimeException("Tour not found with id: " + tourId));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Tour not found with id: " + tourId));
 
         if (!tour.getAuthorId().equals(authorId)) {
-            throw new RuntimeException("Unauthorized: Only tour author can delete transport times");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only tour author can delete transport times");
         }
 
         TransportTime transportTime = transportTimeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("TransportTime not found with id: " + id));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "TransportTime not found with id: " + id));
 
         if (!transportTime.getTour().getId().equals(tourId)) {
-            throw new RuntimeException("TransportTime does not belong to this tour");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "TransportTime does not belong to this tour");
         }
 
         transportTimeRepository.delete(transportTime);
@@ -93,7 +95,8 @@ public class TransportTimeService {
         try {
             return TransportTime.TransportType.valueOf(type.toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new RuntimeException("Invalid transport type: " + type + ". Must be one of: WALKING, BICYCLE, CAR");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Invalid transport type: " + type + ". Must be one of: WALKING, BICYCLE, CAR");
         }
     }
 

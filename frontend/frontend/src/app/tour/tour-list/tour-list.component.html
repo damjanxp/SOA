@@ -44,12 +44,31 @@
       <div class="tour-keypoints">
         <small><strong>Key Points:</strong> {{ tour.keypoints?.length || 0 }}</small>
       </div>
+      <div class="tour-dates">
+        <small *ngIf="tour.status === 'PUBLISHED' && tour['publishedAt']"><strong>Published:</strong> {{ tour['publishedAt'] | date:'short' }}</small>
+        <small *ngIf="tour.status === 'ARCHIVED' && tour['archivedAt']"><strong>Archived:</strong> {{ tour['archivedAt'] | date:'short' }}</small>
+      </div>
+
+      <div *ngIf="tourErrors[tour.id!]" class="alert alert-danger mt-1" style="font-size:0.85em">
+        {{ tourErrors[tour.id!] }}
+      </div>
+      <div *ngIf="tourSuccess[tour.id!]" class="alert alert-success mt-1" style="font-size:0.85em">
+        {{ tourSuccess[tour.id!] }}
+      </div>
 
       <div class="tour-actions">
         <button class="btn btn-sm btn-info" (click)="viewTour(tour.id!)">View</button>
         <button class="btn btn-sm btn-success" (click)="publishTour(tour.id!)"
                 *ngIf="tour.status === 'DRAFT'">
           Publish
+        </button>
+        <button class="btn btn-sm btn-warning" (click)="archiveTour(tour.id!)"
+                *ngIf="tour.status === 'PUBLISHED'">
+          Archive
+        </button>
+        <button class="btn btn-sm btn-secondary" (click)="reactivateTour(tour.id!)"
+                *ngIf="tour.status === 'ARCHIVED'">
+          Reactivate
         </button>
         <button class="btn btn-sm btn-danger" (click)="deleteTour(tour.id!)">Delete</button>
       </div>

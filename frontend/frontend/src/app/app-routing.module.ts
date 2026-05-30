@@ -28,9 +28,10 @@ const routes: Routes = [
   { path: 'blogs', component: BlogListComponent, canActivate: [AuthGuard] },
   { path: 'blogs/new', component: BlogFormComponent, canActivate: [AuthGuard] },
   { path: 'blogs/:id', component: BlogDetailComponent, canActivate: [AuthGuard] },
-  
+
   // Tour routes
   { path: 'tours', component: TourListComponent, canActivate: [AuthGuard] },
+  { path: 'tours/my', component: TourListComponent, canActivate: [AuthGuard] },
   { path: 'tours/new', component: TourFormComponent, canActivate: [AuthGuard] },
   { path: 'tours/:id', component: TourDetailComponent, canActivate: [AuthGuard] },
   { path: 'tours/:id/edit', component: TourFormComponent, canActivate: [AuthGuard] },

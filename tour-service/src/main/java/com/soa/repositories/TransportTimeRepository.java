@@ -10,4 +10,5 @@ import java.util.List;
 public interface TransportTimeRepository extends JpaRepository<TransportTime, Long> {
     List<TransportTime> findByTourId(Long tourId);
     void deleteByTourId(Long tourId);
+    long countByTourId(Long tourId);
 }

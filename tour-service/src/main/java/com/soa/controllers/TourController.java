@@ -1,6 +1,7 @@
 package com.soa.controllers;
 
 import com.soa.dtos.CreateTourRequest;
+import com.soa.dtos.TourPublicDTO;
 import com.soa.dtos.TourResponse;
 import com.soa.services.TourService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -34,11 +35,11 @@ public class TourController {
 
     /**
      * Get all published tours (GET /api/tours/published)
+     * Vraca ograniceni prikaz sa samo prvom kljucnom tackom, sortirano po publishedAt DESC
      */
     @GetMapping("/published")
-    public ResponseEntity<List<TourResponse>> getPublishedTours() {
-        List<TourResponse> tours = tourService.getPublishedTours();
-        return ResponseEntity.ok(tours);
+    public ResponseEntity<List<TourPublicDTO>> getPublishedTours() {
+        return ResponseEntity.ok(tourService.getPublishedToursForTourist());
     }
 
     /**
@@ -53,11 +54,14 @@ public class TourController {
 
     /**
      * Get tour by ID (GET /api/tours/{id})
+     * Vraca kompletan prikaz ako je tura kupljena, inace ogranicen
      */
     @GetMapping("/{id}")
-    public ResponseEntity<TourResponse> getTourById(@PathVariable Long id) {
-        TourResponse tour = tourService.getTourById(id);
-        return ResponseEntity.ok(tour);
+    public ResponseEntity<Object> getTourById(
+            @PathVariable Long id,
+            HttpServletRequest httpRequest) {
+        String touristId = (String) httpRequest.getAttribute("userId");
+        return ResponseEntity.ok(tourService.getTourByIdForTourist(id, touristId));
     }
 
     /**
@@ -94,7 +98,6 @@ public class TourController {
     public ResponseEntity<TourResponse> publishTour(
             @PathVariable Long id,
             HttpServletRequest httpRequest) {
-        
         String userId = getUserIdFromRequest(httpRequest);
         TourResponse response = tourService.publishTour(id, userId);
         return ResponseEntity.ok(response);
@@ -107,7 +110,6 @@ public class TourController {
     public ResponseEntity<TourResponse> archiveTour(
             @PathVariable Long id,
             HttpServletRequest httpRequest) {
-
         String userId = getUserIdFromRequest(httpRequest);
         TourResponse response = tourService.archiveTour(id, userId);
         return ResponseEntity.ok(response);
@@ -120,7 +122,6 @@ public class TourController {
     public ResponseEntity<TourResponse> reactivateTour(
             @PathVariable Long id,
             HttpServletRequest httpRequest) {
-
         String userId = getUserIdFromRequest(httpRequest);
         TourResponse response = tourService.reactivateTour(id, userId);
         return ResponseEntity.ok(response);

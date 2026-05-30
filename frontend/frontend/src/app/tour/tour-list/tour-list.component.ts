@@ -11,6 +11,8 @@ export class TourListComponent implements OnInit {
   tours: Tour[] = [];
   loading = false;
   error = '';
+  tourErrors: { [id: number]: string } = {};
+  tourSuccess: { [id: number]: string } = {};
 
   constructor(private tourService: TourService, private router: Router) { }
 
@@ -61,13 +63,46 @@ export class TourListComponent implements OnInit {
   }
 
   publishTour(id: number): void {
+    this.tourErrors[id] = '';
+    this.tourSuccess[id] = '';
     this.tourService.publishTour(id).subscribe({
-      next: () => {
-        this.loadMyTours();
+      next: (res) => {
+        this.tourSuccess[id] = 'Tura uspješno objavljena!';
+        const tour = this.tours.find(t => t.id === id);
+        if (tour) { tour.status = 'PUBLISHED'; (tour as any).publishedAt = res.publishedAt || new Date().toISOString(); }
       },
       error: (err) => {
-        console.error('Greška pri objavljivanju ture', err);
-        this.error = 'Greška pri objavljivanju ture';
+        this.tourErrors[id] = err?.error?.message || err?.error?.error || 'Greška pri objavljivanju ture';
+      }
+    });
+  }
+
+  archiveTour(id: number): void {
+    this.tourErrors[id] = '';
+    this.tourSuccess[id] = '';
+    this.tourService.archiveTour(id).subscribe({
+      next: () => {
+        this.tourSuccess[id] = 'Tura arhivirana.';
+        const tour = this.tours.find(t => t.id === id);
+        if (tour) tour.status = 'ARCHIVED';
+      },
+      error: (err) => {
+        this.tourErrors[id] = err?.error?.message || err?.error?.error || 'Greška pri arhiviranju';
+      }
+    });
+  }
+
+  reactivateTour(id: number): void {
+    this.tourErrors[id] = '';
+    this.tourSuccess[id] = '';
+    this.tourService.reactivateTour(id).subscribe({
+      next: () => {
+        this.tourSuccess[id] = 'Tura reaktivirana.';
+        const tour = this.tours.find(t => t.id === id);
+        if (tour) tour.status = 'PUBLISHED';
+      },
+      error: (err) => {
+        this.tourErrors[id] = err?.error?.message || err?.error?.error || 'Greška pri reaktivaciji';
       }
     });
   }

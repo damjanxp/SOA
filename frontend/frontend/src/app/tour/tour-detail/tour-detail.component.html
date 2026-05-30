@@ -27,6 +27,14 @@
     <div class="actions">
       <button (click)="editTour()">Edit</button>
       <button (click)="manageKeypoints()">Manage Keypoints</button>
+      <button class="btn btn-success" (click)="addToCart()" *ngIf="tour.status === 'PUBLISHED'">
+        Dodaj u korpu
+      </button>
+    </div>
+    <div *ngIf="cartMessage" class="alert alert-success mt-1">{{ cartMessage }}</div>
+    <div *ngIf="cartError" class="alert alert-danger mt-1">{{ cartError }}</div>
+    <div *ngIf="!isPurchased && keypoints.length > 0" class="alert alert-info mt-1">
+      Prikazana je samo prva kljucna tacka. Kupi turu da vidis sve tacke.
     </div>
   </div>
 

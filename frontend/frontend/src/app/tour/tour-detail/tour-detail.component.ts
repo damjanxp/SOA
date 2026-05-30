@@ -77,6 +77,23 @@ export class TourDetailComponent implements OnInit {
     this.router.navigate(['/tours']);
   }
 
+  get isPurchased(): boolean {
+    return (this.keypoints?.length ?? 0) > 1;
+  }
+
+  cartMessage = '';
+  cartError = '';
+
+  addToCart(): void {
+    if (!this.tour?.id) return;
+    this.cartMessage = '';
+    this.cartError = '';
+    this.tourService.addToCart(this.tour.id).subscribe({
+      next: () => { this.cartMessage = 'Tura dodana u korpu!'; },
+      error: (err) => { this.cartError = err?.error?.message || 'Greška pri dodavanju u korpu'; }
+    });
+  }
+
   getStatusClass(status: string): string {
     switch (status) {
       case 'DRAFT': return 'draft';

@@ -7,6 +7,8 @@ import java.util.List;
 
 @Repository
 public interface KeypointRepository extends JpaRepository<Keypoint, Long> {
+    List<Keypoint> findByTourId(Long tourId);
     List<Keypoint> findByTourIdOrderByOrderIndex(Long tourId);
     void deleteByTourId(Long tourId);
+    long countByTourId(Long tourId);
 }

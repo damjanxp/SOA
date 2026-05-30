@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -62,7 +63,7 @@ public class TransportTimeController {
     private String getUserIdFromRequest(HttpServletRequest request) {
         Object userIdObj = request.getAttribute("userId");
         if (userIdObj == null) {
-            throw new RuntimeException("Unauthorized: User ID not found");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized: User ID not found");
         }
         return (String) userIdObj;
     }

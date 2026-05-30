@@ -5,6 +5,9 @@ option go_package = "./pb/tour";
 service TourService {
   rpc GetPublishedTours(Empty) returns (ToursResponse);
   rpc GetTourById(GetTourRequest) returns (TourResponse);
+  rpc PublishTour(PublishTourRequest) returns (TourActionResponse);
+  rpc ArchiveTour(TourIdRequest) returns (TourActionResponse);
+  rpc ReactivateTour(TourIdRequest) returns (TourActionResponse);
 }
 
 message Empty {}
@@ -26,5 +29,21 @@ message TourResponse {
 
 message ToursResponse {
   repeated TourResponse tours = 1;
+}
+
+message PublishTourRequest {
+  string tour_id = 1;
+  string author_id = 2;
+}
+
+message TourIdRequest {
+  string tour_id = 1;
+}
+
+message TourActionResponse {
+  bool success = 1;
+  string message = 2;
+  string tour_id = 3;
+  string status = 4;
 }
 

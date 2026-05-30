@@ -1,28 +1,41 @@
-package com.soa.grpc;
+﻿package com.soa.grpc;
 
 import com.soa.dtos.CreateTransportTimeRequest;
 import com.soa.dtos.KeypointResponse;
 import com.soa.dtos.TransportTimeResponse;
 import com.soa.models.Tour;
+import com.soa.models.Tour.TourStatus;
+import com.soa.repositories.KeypointRepository;
 import com.soa.repositories.TourRepository;
+import com.soa.repositories.TransportTimeRepository;
 import com.soa.services.KeypointService;
 import com.soa.services.TransportTimeService;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
 import net.devh.boot.grpc.server.service.GrpcService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @GrpcService
+@Transactional
 @RequiredArgsConstructor
 public class TourGrpcService extends TourServiceGrpc.TourServiceImplBase {
+
+    private static final Logger log = LoggerFactory.getLogger(TourGrpcService.class);
 
     private final KeypointService keypointService;
     private final TransportTimeService transportTimeService;
     private final TourRepository tourRepository;
+    private final KeypointRepository keypointRepository;
+    private final TransportTimeRepository transportTimeRepository;
 
-    // ── GetTourKeyPoints ─────────────────────────────────────────────────────
+    // â”€â”€ GetTourKeyPoints â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     @Override
     public void getTourKeyPoints(GetKeyPointsRequest request,
@@ -75,7 +88,7 @@ public class TourGrpcService extends TourServiceGrpc.TourServiceImplBase {
         }
     }
 
-    // ── AddTransportTime ─────────────────────────────────────────────────────
+    // â”€â”€ AddTransportTime â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     @Override
     public void addTransportTime(AddTransportTimeRequest request,
@@ -123,7 +136,7 @@ public class TourGrpcService extends TourServiceGrpc.TourServiceImplBase {
         }
     }
 
-    // ── helpers ──────────────────────────────────────────────────────────────
+    // â”€â”€ helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     /**
      * Determines whether the given tourist has purchased the tour.
@@ -131,5 +144,178 @@ public class TourGrpcService extends TourServiceGrpc.TourServiceImplBase {
      */
     private boolean hasPurchasedTour(String touristId, Long tourId) {
         return true;
+    }
+
+    // â”€â”€ PublishTour â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    @Override
+    public void publishTour(PublishTourRequest request,
+                            StreamObserver<TourActionResponse> responseObserver) {
+        log.info("gRPC publishTour called for tourId={}", request.getTourId());
+
+        try {
+            Long tourId = Long.parseLong(request.getTourId());
+            Optional<Tour> tourOpt = tourRepository.findById(tourId);
+
+            if (tourOpt.isEmpty()) {
+                respond(responseObserver, false, "Tour not found", request.getTourId(), "");
+                return;
+            }
+
+            Tour tour = tourOpt.get();
+
+            log.info("authorId from DB: '{}', authorId from request: '{}'", tour.getAuthorId(), request.getAuthorId());
+            if (!tour.getAuthorId().equals(request.getAuthorId())) {
+                respond(responseObserver, false, "Not authorized", request.getTourId(), tour.getStatus().name());
+                return;
+            }
+
+            if (tour.getStatus() != TourStatus.DRAFT) {
+                respond(responseObserver, false, "Only draft tours can be published",
+                        request.getTourId(), tour.getStatus().name());
+                return;
+            }
+
+            long keypointCount = keypointRepository.countByTourId(tour.getId());
+            if (keypointCount < 2) {
+                respond(responseObserver, false,
+                        "Tour must have at least 2 keypoints before publishing",
+                        request.getTourId(), tour.getStatus().name());
+                return;
+            }
+
+            long transportCount = transportTimeRepository.countByTourId(tour.getId());
+            if (transportCount < 1) {
+                respond(responseObserver, false,
+                        "Tour must have at least one transport time (WALKING, BICYCLE or CAR) before publishing",
+                        request.getTourId(), tour.getStatus().name());
+                return;
+            }
+
+            boolean missingFields = isBlank(tour.getName())
+                    || isBlank(tour.getDescription())
+                    || tour.getDifficulty() == null
+                    || tour.getTags() == null
+                    || tour.getTags().isEmpty();
+
+            if (missingFields) {
+                respond(responseObserver, false,
+                        "Tour is missing required fields: name, description, difficulty, tags",
+                        request.getTourId(), tour.getStatus().name());
+                return;
+            }
+
+            tour.setStatus(TourStatus.PUBLISHED);
+            tour.setPublishedAt(LocalDateTime.now());
+            tourRepository.save(tour);
+
+            log.info("Tour {} published successfully", tourId);
+            respond(responseObserver, true, "Tour published successfully", request.getTourId(), "PUBLISHED");
+
+        } catch (NumberFormatException e) {
+            log.error("Invalid tour ID format: {}", request.getTourId());
+            respond(responseObserver, false, "Invalid tour ID format", request.getTourId(), "");
+        } catch (Exception e) {
+            log.error("Error publishing tour {}: {}", request.getTourId(), e.getMessage(), e);
+            respond(responseObserver, false, "Internal error: " + e.getMessage(), request.getTourId(), "");
+        }
+    }
+
+    // â”€â”€ ArchiveTour â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    @Override
+    public void archiveTour(TourIdRequest request,
+                            StreamObserver<TourActionResponse> responseObserver) {
+        log.info("gRPC archiveTour called for tourId={}", request.getTourId());
+
+        try {
+            Long tourId = Long.parseLong(request.getTourId());
+            Optional<Tour> optTour = tourRepository.findById(tourId);
+
+            if (optTour.isEmpty()) {
+                respond(responseObserver, false, "Tour not found", request.getTourId(), "");
+                return;
+            }
+
+            Tour tour = optTour.get();
+
+            if (tour.getStatus() != TourStatus.PUBLISHED) {
+                respond(responseObserver, false,
+                        "Only published tours can be archived (current status: " + tour.getStatus() + ")",
+                        request.getTourId(), tour.getStatus().name());
+                return;
+            }
+
+            tour.setStatus(TourStatus.ARCHIVED);
+            tour.setArchivedAt(LocalDateTime.now());
+            tourRepository.save(tour);
+
+            log.info("Tour {} archived successfully", tourId);
+            respond(responseObserver, true, "Tour archived successfully", request.getTourId(), "ARCHIVED");
+
+        } catch (NumberFormatException e) {
+            respond(responseObserver, false, "Invalid tour ID format", request.getTourId(), "");
+        } catch (Exception e) {
+            log.error("Error archiving tour {}: {}", request.getTourId(), e.getMessage(), e);
+            respond(responseObserver, false, "Internal error: " + e.getMessage(), request.getTourId(), "");
+        }
+    }
+
+    // â”€â”€ ReactivateTour â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    @Override
+    public void reactivateTour(TourIdRequest request,
+                               StreamObserver<TourActionResponse> responseObserver) {
+        log.info("gRPC reactivateTour called for tourId={}", request.getTourId());
+
+        try {
+            Long tourId = Long.parseLong(request.getTourId());
+            Optional<Tour> optTour = tourRepository.findById(tourId);
+
+            if (optTour.isEmpty()) {
+                respond(responseObserver, false, "Tour not found", request.getTourId(), "");
+                return;
+            }
+
+            Tour tour = optTour.get();
+
+            if (tour.getStatus() != TourStatus.ARCHIVED) {
+                respond(responseObserver, false,
+                        "Only archived tours can be reactivated (current status: " + tour.getStatus() + ")",
+                        request.getTourId(), tour.getStatus().name());
+                return;
+            }
+
+            tour.setStatus(TourStatus.PUBLISHED);
+            tour.setArchivedAt(null);
+            tourRepository.save(tour);
+
+            log.info("Tour {} reactivated successfully", tourId);
+            respond(responseObserver, true, "Tour reactivated successfully", request.getTourId(), "PUBLISHED");
+
+        } catch (NumberFormatException e) {
+            respond(responseObserver, false, "Invalid tour ID format", request.getTourId(), "");
+        } catch (Exception e) {
+            log.error("Error reactivating tour {}: {}", request.getTourId(), e.getMessage(), e);
+            respond(responseObserver, false, "Internal error: " + e.getMessage(), request.getTourId(), "");
+        }
+    }
+
+    // â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    private void respond(StreamObserver<TourActionResponse> observer,
+                         boolean success, String message, String tourId, String status) {
+        TourActionResponse response = TourActionResponse.newBuilder()
+                .setSuccess(success)
+                .setMessage(message)
+                .setTourId(tourId)
+                .setStatus(status)
+                .build();
+        observer.onNext(response);
+        observer.onCompleted();
+    }
+
+    private boolean isBlank(String s) {
+        return s == null || s.isBlank();
     }
 }

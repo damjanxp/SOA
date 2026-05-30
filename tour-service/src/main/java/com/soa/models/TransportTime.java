@@ -25,6 +25,10 @@ public class TransportTime {
     @JsonBackReference
     private Tour tour;
 
+    public enum TransportType {
+        WALKING, BICYCLE, CAR
+    }
+
     @NotNull(message = "Transport type is required")
     @Enumerated(EnumType.STRING)
     @Column(name = "transport_type", nullable = false)
@@ -33,8 +37,4 @@ public class TransportTime {
     @NotNull(message = "Duration in minutes is required")
     @Column(name = "duration_minutes", nullable = false)
     private Integer durationMinutes;
-
-    public enum TransportType {
-        WALKING, BICYCLE, CAR
-    }
 }

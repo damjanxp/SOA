@@ -134,3 +134,63 @@
     }
   }
 }
+
+.transport-times-section {
+  margin-top: 24px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+
+  h3 {
+    margin: 0 0 4px;
+    font-size: 1.2rem;
+    color: #333;
+  }
+
+  .empty-state p {
+    color: #999;
+    font-style: italic;
+    margin: 12px 0;
+  }
+
+  .transport-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    margin: 6px 0;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+  }
+
+  .transport-badge {
+    font-weight: 600;
+    color: #495057;
+  }
+
+  .transport-duration {
+    color: #6c757d;
+    font-size: 0.9rem;
+    flex: 1;
+  }
+
+  .add-transport-form {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-top: 14px;
+    flex-wrap: wrap;
+
+    .transport-select {
+      width: auto;
+      min-width: 130px;
+    }
+
+    .duration-input {
+      width: 110px;
+    }
+  }
+}
