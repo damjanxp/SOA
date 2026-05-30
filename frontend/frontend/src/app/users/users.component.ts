@@ -32,9 +32,17 @@ export class UsersComponent implements OnInit {
     private followerService: FollowerService,
   ) {}
 
+  isAdmin = false;
+
   ngOnInit(): void {
     this.myUserId = this.authService.getUserId();
-    this.loadUsers();
+    const role = this.authService.getRole() || '';
+    this.isAdmin = role === 'admin';
+    if (this.isAdmin) {
+      this.loadUsers();
+    } else {
+      this.loading = false;
+    }
     this.loadRecommendations();
   }
 

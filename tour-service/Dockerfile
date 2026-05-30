@@ -4,12 +4,13 @@ FROM maven:3.9-eclipse-temurin-21 AS builder
 
 WORKDIR /build
 
-# Copy pom.xml and source code
+# Copy pom.xml first and download dependencies (cached layer)
 COPY pom.xml .
-COPY src ./src
+RUN mvn dependency:go-offline
 
-# Build the application (skip tests for faster build)
-RUN mvn package -DskipTests -q
+# Copy source and build
+COPY src ./src
+RUN mvn package -DskipTests
 
 # Stage 2: Runtime stage
 FROM eclipse-temurin:21-jre
@@ -21,6 +22,7 @@ COPY --from=builder /build/target/tour-service-*.jar app.jar
 
 # Expose port
 EXPOSE 8083
+EXPOSE 9093
 
 # Run the application
 ENTRYPOINT ["java", "-jar", "app.jar"]

@@ -95,7 +95,7 @@ export class TourService {
   }
 
   addToCart(tourId: number): Observable<any> {
-    return this.http.post<any>(`${environment.apiBase}/api/cart/add`, { tourId });
+    return this.http.post<any>(`${environment.apiBase}/api/tours/${tourId}/cart`, {});
   }
 
   // Keypoint endpoints

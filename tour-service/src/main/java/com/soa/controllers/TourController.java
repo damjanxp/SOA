@@ -1,8 +1,11 @@
 package com.soa.controllers;
 
+import com.soa.dtos.CartItemRequest;
+import com.soa.dtos.CartResponse;
 import com.soa.dtos.CreateTourRequest;
 import com.soa.dtos.TourPublicDTO;
 import com.soa.dtos.TourResponse;
+import com.soa.services.CartService;
 import com.soa.services.TourService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -19,6 +22,22 @@ import java.util.List;
 public class TourController {
 
     private final TourService tourService;
+    private final CartService cartService;
+
+    /**
+     * Add tour to cart (POST /api/tours/{id}/cart)
+     * Convenience endpoint — extracts touristId from X-User-Id header
+     */
+    @PostMapping("/{id}/cart")
+    public ResponseEntity<CartResponse> addToCart(
+            @PathVariable Long id,
+            HttpServletRequest httpRequest) {
+        String touristId = getUserIdFromRequest(httpRequest);
+        CartItemRequest req = new CartItemRequest();
+        req.setTourId(id);
+        CartResponse response = cartService.addItem(touristId, req);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
 
     /**
      * Create a new tour (POST /api/tours)

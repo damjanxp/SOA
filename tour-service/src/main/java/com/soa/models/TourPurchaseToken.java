@@ -44,4 +44,8 @@ public class TourPurchaseToken {
             purchasedAt = LocalDateTime.now();
         }
     }
+
+    public Long getTourId() {
+        return tour != null ? tour.getId() : null;
+    }
 }

@@ -102,9 +102,11 @@ public class CheckoutSaga {
         List<TourPurchaseToken> tokens = new ArrayList<>();
 
         for (OrderItem item : pendingItems) {
+            Tour tour = tourRepository.findById(item.getTourId())
+                    .orElseThrow(() -> new RuntimeException("Tour not found: " + item.getTourId()));
             TourPurchaseToken purchaseToken = TourPurchaseToken.builder()
                     .touristId(touristId)
-                    .tourId(item.getTourId())
+                    .tour(tour)
                     // token + purchasedAt are set by @PrePersist on TourPurchaseToken
                     .build();
 

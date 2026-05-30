@@ -1,4 +1,4 @@
-﻿package com.soa.grpc;
+package com.soa.grpc;
 
 import com.soa.dtos.CreateTransportTimeRequest;
 import com.soa.dtos.KeypointResponse;
