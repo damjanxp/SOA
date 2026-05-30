@@ -59,6 +59,9 @@ func main() {
 	r.POST("/api/auth/register", authHandler.Register)
 	r.POST("/api/auth/login", authHandler.Login)
 
+	// Interni endpoint za SAGA notifikacije (bez AuthMiddleware)
+	r.POST("/api/internal/notify-followers", handlers.NotifyFollowers)
+
 	protected := r.Group("/api")
 	protected.Use(middleware.AuthMiddleware())
 	{

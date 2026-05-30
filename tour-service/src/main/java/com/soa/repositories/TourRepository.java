@@ -9,4 +9,5 @@ import java.util.List;
 public interface TourRepository extends JpaRepository<Tour, Long> {
     List<Tour> findByAuthorId(String authorId);
     List<Tour> findByStatus(Tour.TourStatus status);
+    List<Tour> findByStatusOrderByPublishedAtDesc(Tour.TourStatus status);
 }

@@ -1,11 +1,18 @@
 package com.soa.services;
 
 import com.soa.dtos.CreateTourRequest;
+import com.soa.dtos.KeypointDTO;
 import com.soa.dtos.KeypointResponse;
+import com.soa.dtos.ReviewResponse;
+import com.soa.dtos.TourFullDTO;
+import com.soa.dtos.TourPublicDTO;
 import com.soa.dtos.TourResponse;
 import com.soa.models.Keypoint;
+import com.soa.models.Review;
 import com.soa.models.Tour;
 import com.soa.repositories.KeypointRepository;
+import com.soa.repositories.ReviewRepository;
+import com.soa.repositories.TourPurchaseTokenRepository;
 import com.soa.repositories.TourRepository;
 import com.soa.repositories.TransportTimeRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +34,8 @@ public class TourService {
     private final TourRepository tourRepository;
     private final KeypointRepository keypointRepository;
     private final TransportTimeRepository transportTimeRepository;
+    private final TourPurchaseTokenRepository purchaseTokenRepository;
+    private final ReviewRepository reviewRepository;
 
     /**
      * Create a new tour (initially with DRAFT status and price 0)
@@ -212,6 +221,105 @@ public class TourService {
         tour.setStatus(Tour.TourStatus.PUBLISHED);
         tour.setArchivedAt(null);
         return mapToResponse(tourRepository.save(tour));
+    }
+
+    // ─── Public tour browsing ─────────────────────────────────────────────────────
+
+    /**
+     * GET /api/tours/published — sortira po publishedAt DESC, vraca samo prvu kljucnu tacku
+     */
+    public List<TourPublicDTO> getPublishedToursForTourist() {
+        return tourRepository.findByStatusOrderByPublishedAtDesc(Tour.TourStatus.PUBLISHED)
+                .stream()
+                .map(this::mapToPublicDTO)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * GET /api/tours/:id — vraca kompletan prikaz ako je kupljeno, inace ogranicen
+     */
+    public Object getTourByIdForTourist(Long tourId, String touristId) {
+        Tour tour = tourRepository.findById(tourId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Tour not found with id: " + tourId));
+
+        boolean hasPurchased = touristId != null &&
+                purchaseTokenRepository.existsByTouristIdAndTourId(touristId, tourId);
+
+        if (hasPurchased) {
+            return mapToFullDTO(tour);
+        } else {
+            return mapToPublicDTO(tour);
+        }
+    }
+
+    // ─── Mapper helpers ───────────────────────────────────────────────────────────
+
+    private KeypointDTO mapToKeypointDTO(Keypoint kp) {
+        return KeypointDTO.builder()
+                .id(kp.getId())
+                .name(kp.getName())
+                .description(kp.getDescription())
+                .imageUrl(kp.getImageUrl())
+                .lat(kp.getLat())
+                .lon(kp.getLon())
+                .orderIndex(kp.getOrderIndex())
+                .build();
+    }
+
+    private TourPublicDTO mapToPublicDTO(Tour tour) {
+        List<Keypoint> kps = keypointRepository.findByTourIdOrderByOrderIndex(tour.getId());
+        KeypointDTO first = kps.isEmpty() ? null : mapToKeypointDTO(kps.get(0));
+        List<KeypointDTO> kpList = first != null ? List.of(first) : List.of();
+
+        return TourPublicDTO.builder()
+                .id(tour.getId())
+                .name(tour.getName())
+                .description(tour.getDescription())
+                .difficulty(tour.getDifficulty().name())
+                .tags(tour.getTags())
+                .price(tour.getPrice())
+                .lengthKm(tour.getLengthKm())
+                .publishedAt(tour.getPublishedAt())
+                .status(tour.getStatus().name())
+                .firstKeypoint(first)
+                .keypoints(kpList)
+                .build();
+    }
+
+    private TourFullDTO mapToFullDTO(Tour tour) {
+        List<KeypointDTO> allKps = keypointRepository.findByTourIdOrderByOrderIndex(tour.getId())
+                .stream().map(this::mapToKeypointDTO).collect(Collectors.toList());
+
+        List<ReviewResponse> reviews = reviewRepository.findByTourId(tour.getId())
+                .stream().map(this::mapReviewToResponse).collect(Collectors.toList());
+
+        return TourFullDTO.builder()
+                .id(tour.getId())
+                .name(tour.getName())
+                .description(tour.getDescription())
+                .difficulty(tour.getDifficulty().name())
+                .tags(tour.getTags())
+                .price(tour.getPrice())
+                .lengthKm(tour.getLengthKm())
+                .publishedAt(tour.getPublishedAt())
+                .status(tour.getStatus().name())
+                .keypoints(allKps)
+                .reviews(reviews)
+                .build();
+    }
+
+    private ReviewResponse mapReviewToResponse(Review r) {
+        return ReviewResponse.builder()
+                .id(r.getId())
+                .tourId(r.getTour().getId())
+                .touristId(r.getTouristId())
+                .rating(r.getRating())
+                .comment(r.getComment())
+                .visitDate(r.getVisitDate())
+                .createdAt(r.getCreatedAt())
+                .images(r.getImages())
+                .build();
     }
 
     // ─── Mapper ──────────────────────────────────────────────────────────────────

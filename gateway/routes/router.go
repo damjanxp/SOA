@@ -9,6 +9,7 @@ import (
 
 	"github.com/damjanxp/gateway/clients"
 	"github.com/damjanxp/gateway/middleware"
+	"github.com/damjanxp/gateway/saga"
 	"github.com/gin-gonic/gin"
 )
 
@@ -98,7 +99,7 @@ func corsMiddleware() gin.HandlerFunc {
 }
 
 // SetupRouter configures all gateway routes on the provided Gin engine.
-func SetupRouter(r *gin.Engine, tourGrpc *clients.TourGrpcClient) {
+func SetupRouter(r *gin.Engine, tourGrpc *clients.TourGrpcClient, publishSaga *saga.PublishTourSAGA) {
 	// Disable automatic redirect for trailing slashes — prevents Authorization header being
 	// dropped when e.g. /api/blogs is redirected to /api/blogs/ by Gin.
 	r.RedirectTrailingSlash = false
@@ -152,16 +153,22 @@ func SetupRouter(r *gin.Engine, tourGrpc *clients.TourGrpcClient) {
 			authorIdRaw, _ := c.Get("userId")
 			authorId, _ := authorIdRaw.(string)
 
-			resp, err := tourGrpc.PublishTour(c.Request.Context(), tourId, authorId)
-			if err != nil {
-				c.JSON(http.StatusBadGateway, gin.H{"error": "gRPC error: " + err.Error()})
+			// Pokusaj da procitas tourName iz body-ja
+			var body struct {
+				TourName string `json:"tourName"`
+			}
+			if err := c.ShouldBindJSON(&body); err != nil || body.TourName == "" {
+				body.TourName = "Tour #" + tourId
+			}
+
+			if err := publishSaga.Execute(c.Request.Context(), tourId, authorId, body.TourName); err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 				return
 			}
-			if !resp.GetSuccess() {
-				c.JSON(http.StatusBadRequest, gin.H{"error": resp.GetMessage()})
-				return
-			}
-			c.JSON(http.StatusOK, gin.H{"status": resp.GetStatus(), "tourId": resp.GetTourId()})
+			c.JSON(http.StatusOK, gin.H{
+				"status":  "PUBLISHED",
+				"message": "Tour published successfully",
+			})
 		})
 
 		protected.POST("/tours/:id/archive", func(c *gin.Context) {
