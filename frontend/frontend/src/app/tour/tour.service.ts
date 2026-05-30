@@ -15,6 +15,8 @@ export interface Tour {
   lengthKm?: number;
   createdAt?: string;
   updatedAt?: string;
+  publishedAt?: string;
+  archivedAt?: string;
   keypoints?: Keypoint[];
 }
 
@@ -68,8 +70,32 @@ export class TourService {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
-  publishTour(id: number): Observable<Tour> {
-    return this.http.post<Tour>(`${this.apiUrl}/${id}/publish`, {});
+  publishTour(id: number): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/${id}/publish`, {});
+  }
+
+  archiveTour(id: number): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/${id}/archive`, {});
+  }
+
+  reactivateTour(id: number): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/${id}/reactivate`, {});
+  }
+
+  getTransportTimes(tourId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/${tourId}/transport-times`);
+  }
+
+  addTransportTime(tourId: number, data: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/${tourId}/transport-times`, data);
+  }
+
+  deleteTransportTime(tourId: number, ttId: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${tourId}/transport-times/${ttId}`);
+  }
+
+  addToCart(tourId: number): Observable<any> {
+    return this.http.post<any>(`${environment.apiBase}/api/cart/add`, { tourId });
   }
 
   // Keypoint endpoints

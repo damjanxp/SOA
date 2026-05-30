@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { forkJoin, of } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 import { TourService, Tour } from '../tour.service';
 
 @Component({
@@ -17,6 +19,23 @@ export class TourFormComponent implements OnInit {
   tour: Tour | null = null;
 
   difficulties = ['EASY', 'MEDIUM', 'HARD'];
+  transportTypes = ['WALK', 'BIKE', 'CAR'];
+  transportTypeLabels: Record<string, string> = { WALK: '🚶 Walk', BIKE: '🚴 Bike', CAR: '🚗 Car' };
+
+  get name() { return this.tourForm.get('name'); }
+  get description() { return this.tourForm.get('description'); }
+  get lengthKm() { return this.tourForm.get('lengthKm'); }
+
+  cancel(): void { this.router.navigate(['/tours']); }
+
+  // Edit mode: loaded from backend
+  transportTimes: any[] = [];
+  pendingTransportTimes: { type: string; durationMinutes: number }[] = [];
+
+  ttType = 'WALKING';
+  ttDuration = 30;
+  ttError = '';
+  ttLoading = false;
 
   constructor(
     private fb: FormBuilder,
@@ -27,12 +46,12 @@ export class TourFormComponent implements OnInit {
 
   ngOnInit(): void {
     this.initForm();
-    
     this.route.params.subscribe(params => {
       if (params['id']) {
         this.tourId = +params['id'];
         this.isEditMode = true;
         this.loadTour();
+        this.loadTransportTimes();
       }
     });
   }
@@ -49,7 +68,6 @@ export class TourFormComponent implements OnInit {
 
   loadTour(): void {
     if (!this.tourId) return;
-
     this.loading = true;
     this.tourService.getTourById(this.tourId).subscribe({
       next: (data) => {
@@ -68,6 +86,44 @@ export class TourFormComponent implements OnInit {
         console.error(err);
         this.loading = false;
       }
+    });
+  }
+
+  loadTransportTimes(): void {
+    if (!this.tourId) return;
+    this.tourService.getTransportTimes(this.tourId).subscribe({
+      next: (data) => { this.transportTimes = data; },
+      error: () => {}
+    });
+  }
+
+  addTransportTime(): void {
+    if (this.ttDuration < 1) {
+      this.ttError = 'Trajanje mora biti najmanje 1 minuta';
+      return;
+    }
+    this.ttError = '';
+
+    if (this.isEditMode && this.tourId) {
+      this.ttLoading = true;
+      this.tourService.addTransportTime(this.tourId, { transportType: this.ttType, timeMinutes: this.ttDuration }).subscribe({
+        next: (item) => { this.transportTimes.push(item); this.ttLoading = false; },
+        error: (err) => { this.ttError = err?.error?.message || 'Greška'; this.ttLoading = false; }
+      });
+    } else {
+      this.pendingTransportTimes.push({ type: this.ttType, durationMinutes: this.ttDuration });
+    }
+  }
+
+  removePendingTransportTime(index: number): void {
+    this.pendingTransportTimes.splice(index, 1);
+  }
+
+  deleteTransportTime(id: number): void {
+    if (!this.tourId) return;
+    this.tourService.deleteTransportTime(this.tourId, id).subscribe({
+      next: () => { this.transportTimes = this.transportTimes.filter(t => t.id !== id); },
+      error: () => {}
     });
   }
 
@@ -104,41 +160,31 @@ export class TourFormComponent implements OnInit {
         }
       });
     } else {
-      this.tourService.createTour(tourData).subscribe({
-        next: (data) => {
-          this.router.navigate(['/tours', data.id]);
+      this.tourService.createTour(tourData).pipe(
+        switchMap((created: Tour) => {
+          if (this.pendingTransportTimes.length === 0) {
+            return of({ tour: created });
+          }
+          const requests = this.pendingTransportTimes.map(tt =>
+            this.tourService.addTransportTime(created.id as number, {
+              transportType: tt.type,
+              timeMinutes: tt.durationMinutes
+            })
+          );
+          return forkJoin(requests).pipe(switchMap(() => of({ tour: created })));
+        })
+      ).subscribe({
+        next: ({ tour }) => {
+          this.router.navigate(['/tours', tour.id]);
           this.loading = false;
         },
         error: (err) => {
-          this.error = 'Greška pri kreiranju ture';
+          this.error = err?.error?.message || 'Greška pri kreiranju ture';
           console.error(err);
           this.loading = false;
         }
       });
     }
   }
-
-  cancel(): void {
-    if (this.isEditMode && this.tourId) {
-      this.router.navigate(['/tours', this.tourId]);
-    } else {
-      this.router.navigate(['/tours']);
-    }
-  }
-
-  get name() {
-    return this.tourForm.get('name');
-  }
-
-  get description() {
-    return this.tourForm.get('description');
-  }
-
-  get difficulty() {
-    return this.tourForm.get('difficulty');
-  }
-
-  get lengthKm() {
-    return this.tourForm.get('lengthKm');
-  }
 }
+

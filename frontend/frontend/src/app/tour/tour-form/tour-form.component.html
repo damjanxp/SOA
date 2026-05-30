@@ -9,13 +9,13 @@
 
   <div class="form-wrapper">
     <form [formGroup]="tourForm" (ngSubmit)="onSubmit()" class="tour-form">
-      
+
       <div class="form-group">
         <label for="name">Tour Name *</label>
-        <input 
-          type="text" 
-          id="name" 
-          formControlName="name" 
+        <input
+          type="text"
+          id="name"
+          formControlName="name"
           class="form-control"
           placeholder="Enter tour name"
         >
@@ -27,9 +27,9 @@
 
       <div class="form-group">
         <label for="description">Description *</label>
-        <textarea 
-          id="description" 
-          formControlName="description" 
+        <textarea
+          id="description"
+          formControlName="description"
           class="form-control"
           rows="5"
           placeholder="Enter tour description"
@@ -50,10 +50,10 @@
 
         <div class="form-group">
           <label for="lengthKm">Length (km) *</label>
-          <input 
-            type="number" 
-            id="lengthKm" 
-            formControlName="lengthKm" 
+          <input
+            type="number"
+            id="lengthKm"
+            formControlName="lengthKm"
             class="form-control"
             placeholder="0"
           >
@@ -66,10 +66,10 @@
 
       <div class="form-group">
         <label for="tags">Tags (comma-separated)</label>
-        <input 
-          type="text" 
-          id="tags" 
-          formControlName="tags" 
+        <input
+          type="text"
+          id="tags"
+          formControlName="tags"
           class="form-control"
           placeholder="e.g.: hiking, nature, adventure"
         >
@@ -85,5 +85,48 @@
         </button>
       </div>
     </form>
+  </div>
+
+  <!-- Transport Times -->
+  <div class="transport-times-section">
+    <h3>🕒 Transport Times</h3>
+    <p class="text-muted"><small>At least 1 transport time is required before publishing.</small></p>
+
+    <!-- Edit mode: backend transport times -->
+    <ng-container *ngIf="isEditMode">
+      <div *ngIf="transportTimes.length === 0" class="empty-state">
+        <p>No transport times added yet.</p>
+      </div>
+      <div *ngFor="let tt of transportTimes" class="transport-item">
+        <span class="transport-badge">{{ transportTypeLabels[tt.type] || tt.type }}</span>
+        <span class="transport-duration">{{ tt.durationMinutes }} min</span>
+        <button class="btn btn-sm btn-danger" (click)="deleteTransportTime(tt.id)">✕</button>
+      </div>
+    </ng-container>
+
+    <!-- Create mode: pending transport times -->
+    <ng-container *ngIf="!isEditMode">
+      <div *ngIf="pendingTransportTimes.length === 0" class="empty-state">
+        <p>No transport times added yet.</p>
+      </div>
+      <div *ngFor="let tt of pendingTransportTimes; let i = index" class="transport-item">
+        <span class="transport-badge">{{ transportTypeLabels[tt.type] || tt.type }}</span>
+        <span class="transport-duration">{{ tt.durationMinutes }} min</span>
+        <button class="btn btn-sm btn-danger" (click)="removePendingTransportTime(i)">✕</button>
+      </div>
+    </ng-container>
+
+    <!-- Add form -->
+    <div class="add-transport-form">
+      <select [(ngModel)]="ttType" [ngModelOptions]="{standalone: true}" class="form-control transport-select">
+        <option *ngFor="let t of transportTypes" [value]="t">{{ transportTypeLabels[t] }}</option>
+      </select>
+      <input type="number" [(ngModel)]="ttDuration" [ngModelOptions]="{standalone: true}"
+             class="form-control duration-input" min="1" placeholder="Minutes">
+      <button type="button" class="btn btn-outline-primary" (click)="addTransportTime()" [disabled]="ttLoading">
+        {{ ttLoading ? 'Adding...' : '+ Add' }}
+      </button>
+    </div>
+    <div *ngIf="ttError" class="alert alert-danger mt-2">{{ ttError }}</div>
   </div>
 </div>
