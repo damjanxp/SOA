@@ -33,7 +33,7 @@
           <strong>Dužina:</strong> {{ tour.lengthKm | number:'1.0-0' }} km
         </span>
         <span class="meta-item">
-          <strong>Cena:</strong> {{ tour.price }} €
+          <strong>Cena:</strong> {{ tour.price | currency:'EUR' }}
         </span>
       </div>
 

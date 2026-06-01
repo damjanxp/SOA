@@ -21,7 +21,7 @@
     <div class="meta">
       <span>Težina: {{ tour.difficulty }}</span>
       <span>Dužina: {{ tour.lengthKm | number:'1.0-0' }} km</span>
-      <span>Cena: {{ tour.price }} €</span>
+      <span>Cena: {{ tour.price | currency:'EUR' }}</span>
     </div>
 
     <div class="actions">

@@ -21,7 +21,7 @@
 
       <div class="tour-meta">
         <span><strong>Dužina:</strong> {{ tour.lengthKm | number:'1.0-0' }} km</span>
-        <span><strong>Cena:</strong> {{ tour.price }} €</span>
+        <span><strong>Cena:</strong> {{ tour.price | currency:'EUR' }}</span>
       </div>
 
       <div class="tour-tags" *ngIf="tour.tags && tour.tags.length > 0">
