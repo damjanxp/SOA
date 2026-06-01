@@ -1,13 +1,19 @@
 package com.soa.grpc;
 
+import com.soa.dtos.CartItemRequest;
 import com.soa.dtos.CreateTransportTimeRequest;
 import com.soa.dtos.KeypointResponse;
+import com.soa.dtos.TourPurchaseTokenResponse;
 import com.soa.dtos.TransportTimeResponse;
 import com.soa.models.Tour;
 import com.soa.models.Tour.TourStatus;
+import com.soa.models.TourPurchaseToken;
 import com.soa.repositories.KeypointRepository;
+import com.soa.repositories.TourPurchaseTokenRepository;
 import com.soa.repositories.TourRepository;
 import com.soa.repositories.TransportTimeRepository;
+import com.soa.saga.CheckoutSaga;
+import com.soa.services.CartService;
 import com.soa.services.KeypointService;
 import com.soa.services.TransportTimeService;
 import io.grpc.Status;
@@ -21,6 +27,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Collectors;
 
 @GrpcService
 @Transactional
@@ -31,9 +39,12 @@ public class TourGrpcService extends TourServiceGrpc.TourServiceImplBase {
 
     private final KeypointService keypointService;
     private final TransportTimeService transportTimeService;
+    private final CartService cartService;
+    private final CheckoutSaga checkoutSaga;
     private final TourRepository tourRepository;
     private final KeypointRepository keypointRepository;
     private final TransportTimeRepository transportTimeRepository;
+    private final TourPurchaseTokenRepository tourPurchaseTokenRepository;
 
     // â”€â”€ GetTourKeyPoints â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -140,10 +151,10 @@ public class TourGrpcService extends TourServiceGrpc.TourServiceImplBase {
 
     /**
      * Determines whether the given tourist has purchased the tour.
-     * TODO: replace with real TourPurchaseToken check once Purchase service is ready
+     * Checks for existing TourPurchaseToken entry.
      */
     private boolean hasPurchasedTour(String touristId, Long tourId) {
-        return true;
+        return tourPurchaseTokenRepository.existsByTouristIdAndTour_Id(touristId, tourId);
     }
 
     // â”€â”€ PublishTour â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -301,7 +312,94 @@ public class TourGrpcService extends TourServiceGrpc.TourServiceImplBase {
         }
     }
 
-    // â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── AddToCart ──────────────────────────────────────────────────────────────
+
+    @Override
+    public void addToCart(AddToCartRequest request,
+                          StreamObserver<CartResponse> responseObserver) {
+        try {
+            String touristId = request.getTouristId();
+            Long tourId = Long.parseLong(request.getTourId());
+
+            CartItemRequest cartRequest = CartItemRequest.builder()
+                    .tourId(tourId)
+                    .build();
+
+            com.soa.dtos.CartResponse cart = cartService.addItem(touristId, cartRequest);
+
+            // Map CartResponse to proto CartResponse message
+            CartResponse protoResponse = buildCartProtoResponse(cart);
+            responseObserver.onNext(protoResponse);
+            responseObserver.onCompleted();
+
+        } catch (NumberFormatException e) {
+            responseObserver.onError(Status.INVALID_ARGUMENT
+                    .withDescription("Invalid tourId format: " + request.getTourId())
+                    .asRuntimeException());
+        } catch (RuntimeException ex) {
+            responseObserver.onError(Status.INTERNAL
+                    .withDescription(ex.getMessage())
+                    .asRuntimeException());
+        }
+    }
+
+    // ── Checkout ───────────────────────────────────────────────────────────────
+
+    @Override
+    public void checkout(CheckoutRequest request,
+                         StreamObserver<CheckoutResponse> responseObserver) {
+        try {
+            String touristId = request.getTouristId();
+
+            // Execute the checkout saga
+            List<TourPurchaseToken> tokens = checkoutSaga.execute(touristId);
+
+            // Map tokens to proto messages
+            List<TourPurchaseTokenMessage> tokenMessages = tokens.stream()
+                    .map(token -> TourPurchaseTokenMessage.newBuilder()
+                            .setId(String.valueOf(token.getId()))
+                            .setTouristId(token.getTouristId())
+                            .setTourId(String.valueOf(token.getTourId()))
+                            .setToken(token.getToken())
+                            .setPurchasedAt(token.getPurchasedAt().toString())
+                            .build())
+                    .collect(Collectors.toList());
+
+            com.soa.grpc.CheckoutResponse response = com.soa.grpc.CheckoutResponse.newBuilder()
+                    .setSuccess(true)
+                    .setMessage("Checkout successful. Tokens generated for purchased tours.")
+                    .addAllTokens(tokenMessages)
+                    .build();
+
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+
+        } catch (RuntimeException ex) {
+            responseObserver.onError(Status.FAILED_PRECONDITION
+                    .withDescription(ex.getMessage())
+                    .asRuntimeException());
+        }
+    }
+
+    private com.soa.grpc.CartResponse buildCartProtoResponse(com.soa.dtos.CartResponse cart) {
+        List<OrderItemMessage> itemMessages = cart.getItems().stream()
+                .map(item -> OrderItemMessage.newBuilder()
+                        .setId(String.valueOf(item.getId()))
+                        .setTourId(String.valueOf(item.getTourId()))
+                        .setTourName(item.getTourName())
+                        .setPrice(item.getPrice().doubleValue())
+                        .setStatus(item.getStatus())
+                        .build())
+                .collect(Collectors.toList());
+
+        return com.soa.grpc.CartResponse.newBuilder()
+                .setId(String.valueOf(cart.getId()))
+                .setTouristId(cart.getTouristId())
+                .addAllItems(itemMessages)
+                .setTotalPrice(cart.getTotalPrice().doubleValue())
+                .setCreatedAt(cart.getCreatedAt() != null ? cart.getCreatedAt().toString() : "")
+                .build();
+    }
 
     private void respond(StreamObserver<TourActionResponse> observer,
                          boolean success, String message, String tourId, String status) {

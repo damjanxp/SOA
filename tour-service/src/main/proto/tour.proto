@@ -14,6 +14,8 @@ service TourService {
   rpc PublishTour(PublishTourRequest) returns (TourActionResponse);
   rpc ArchiveTour(TourIdRequest) returns (TourActionResponse);
   rpc ReactivateTour(TourIdRequest) returns (TourActionResponse);
+  rpc AddToCart(AddToCartRequest) returns (CartResponse);
+  rpc Checkout(CheckoutRequest) returns (CheckoutResponse);
 }
 
 // ── existing messages ────────────────────────────────────────────────────────
@@ -99,4 +101,45 @@ message TourActionResponse {
   string message = 2;
   string tour_id = 3;
   string status = 4;
+}
+
+// ── AddToCart / Checkout messages ────────────────────────────────────────────
+
+message AddToCartRequest {
+  string tourist_id = 1;
+  string tour_id = 2;
+}
+
+message OrderItemMessage {
+  string id = 1;
+  string tour_id = 2;
+  string tour_name = 3;
+  double price = 4;
+  string status = 5;
+}
+
+message CartResponse {
+  string id = 1;
+  string tourist_id = 2;
+  repeated OrderItemMessage items = 3;
+  double total_price = 4;
+  string created_at = 5;
+}
+
+message CheckoutRequest {
+  string tourist_id = 1;
+}
+
+message TourPurchaseTokenMessage {
+  string id = 1;
+  string tourist_id = 2;
+  string tour_id = 3;
+  string token = 4;
+  string purchased_at = 5;
+}
+
+message CheckoutResponse {
+  bool success = 1;
+  string message = 2;
+  repeated TourPurchaseTokenMessage tokens = 3;
 }
