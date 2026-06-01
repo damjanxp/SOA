@@ -4,6 +4,7 @@ import { LoginComponent } from './auth/login/login.component';
 import { RegisterComponent } from './auth/register/register.component';
 import { UsersComponent } from './users/users.component';
 import { AuthGuard } from './auth/auth.guard';
+import { GuideGuard } from './auth/guide.guard';
 import { ProfileComponent } from './profile/profile.component';
 import { BlogListComponent } from './blog/blog-list/blog-list.component';
 import { BlogDetailComponent } from './blog/blog-detail/blog-detail.component';
@@ -15,6 +16,8 @@ import { TourKeypointsComponent } from './tour/tour-keypoints/tour-keypoints.com
 import { TourReviewsComponent } from './tour/tour-reviews/tour-reviews.component';
 import { AllToursComponent } from './tour/all-tours/all-tours.component';
 import { PositionSimulatorComponent } from './simulator/position-simulator.component';
+import { CartComponent } from './tour/cart/cart.component';
+import { MyPurchasesComponent } from './tour/my-purchases/my-purchases.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -30,14 +33,18 @@ const routes: Routes = [
   { path: 'blogs/:id', component: BlogDetailComponent, canActivate: [AuthGuard] },
 
   // Tour routes
-  { path: 'tours', component: TourListComponent, canActivate: [AuthGuard] },
-  { path: 'tours/my', component: TourListComponent, canActivate: [AuthGuard] },
-  { path: 'tours/new', component: TourFormComponent, canActivate: [AuthGuard] },
+  { path: 'tours', component: TourListComponent, canActivate: [AuthGuard, GuideGuard] },
+  { path: 'tours/my', component: TourListComponent, canActivate: [AuthGuard, GuideGuard] },
+  { path: 'tours/new', component: TourFormComponent, canActivate: [AuthGuard, GuideGuard] },
   { path: 'tours/:id', component: TourDetailComponent, canActivate: [AuthGuard] },
-  { path: 'tours/:id/edit', component: TourFormComponent, canActivate: [AuthGuard] },
-  { path: 'tours/:id/keypoints', component: TourKeypointsComponent, canActivate: [AuthGuard] },
+  { path: 'tours/:id/edit', component: TourFormComponent, canActivate: [AuthGuard, GuideGuard] },
+  { path: 'tours/:id/keypoints', component: TourKeypointsComponent, canActivate: [AuthGuard, GuideGuard] },
   { path: 'tours/:id/reviews', component: TourReviewsComponent, canActivate: [AuthGuard] },
   { path: 'all-tours', component: AllToursComponent, canActivate: [AuthGuard] },
+
+  // Cart & purchases (tourists only)
+  { path: 'cart', component: CartComponent, canActivate: [AuthGuard] },
+  { path: 'my-purchases', component: MyPurchasesComponent, canActivate: [AuthGuard] },
 ];
 
 @NgModule({

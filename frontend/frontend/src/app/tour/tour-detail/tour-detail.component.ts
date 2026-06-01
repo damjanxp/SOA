@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TourService, Tour, Keypoint, Review } from '../tour.service';
+import { AuthService } from '../../auth/auth.service';
 
 @Component({
   selector: 'app-tour-detail',
@@ -20,7 +21,8 @@ export class TourDetailComponent implements OnInit {
   constructor(
     private tourService: TourService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -86,12 +88,46 @@ export class TourDetailComponent implements OnInit {
 
   addToCart(): void {
     if (!this.tour?.id) return;
+    const userId = this.authService.getUserId();
     this.cartMessage = '';
     this.cartError = '';
-    this.tourService.addToCart(this.tour.id).subscribe({
+    this.tourService.addToCart(userId, this.tour.id).subscribe({
       next: () => { this.cartMessage = 'Tura dodana u korpu!'; },
       error: (err) => { this.cartError = err?.error?.message || 'Greška pri dodavanju u korpu'; }
     });
+  }
+
+  archiveMessage = '';
+  archiveError = '';
+
+  archiveTour(): void {
+    if (!this.tour?.id) return;
+    this.archiveMessage = '';
+    this.archiveError = '';
+    this.tourService.archiveTour(this.tour.id).subscribe({
+      next: () => {
+        this.archiveMessage = 'Tura arhivirana.';
+        if (this.tour) this.tour.status = 'ARCHIVED';
+      },
+      error: (err) => { this.archiveError = err?.error?.message || err?.error?.error || 'Greška pri arhiviranju'; }
+    });
+  }
+
+  reactivateTour(): void {
+    if (!this.tour?.id) return;
+    this.archiveMessage = '';
+    this.archiveError = '';
+    this.tourService.reactivateTour(this.tour.id).subscribe({
+      next: () => {
+        this.archiveMessage = 'Tura reaktivirana.';
+        if (this.tour) this.tour.status = 'PUBLISHED';
+      },
+      error: (err) => { this.archiveError = err?.error?.message || err?.error?.error || 'Greška pri reaktivaciji'; }
+    });
+  }
+
+  get isGuide(): boolean {
+    return this.authService.getRole() === 'guide';
   }
 
   getStatusClass(status: string): string {

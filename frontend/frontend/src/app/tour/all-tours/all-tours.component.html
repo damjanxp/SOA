@@ -1,13 +1,13 @@
 <div class="tours-container">
   <div class="header">
-    <h1>Tours</h1>
+    <h1>Ture</h1>
   </div>
 
   <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
-  <div *ngIf="loading" class="loading">Loading...</div>
+  <div *ngIf="loading" class="loading">Učitavanje...</div>
 
   <div *ngIf="!loading && tours.length === 0" class="empty-state">
-    <p>No available tours.</p>
+    <p>Nema dostupnih tura.</p>
   </div>
 
   <div *ngIf="!loading && tours.length > 0" class="tours-grid">
@@ -20,8 +20,8 @@
       <p class="tour-description">{{ tour.description }}</p>
 
       <div class="tour-meta">
-        <span><strong>Length:</strong> {{ tour.lengthKm }} km</span>
-        <span><strong>Price:</strong> {{ tour.price }} $</span>
+        <span><strong>Dužina:</strong> {{ tour.lengthKm | number:'1.0-0' }} km</span>
+        <span><strong>Cena:</strong> {{ tour.price }} €</span>
       </div>
 
       <div class="tour-tags" *ngIf="tour.tags && tour.tags.length > 0">
@@ -29,12 +29,23 @@
       </div>
 
       <div class="tour-keypoint" *ngIf="tour.keypoints && tour.keypoints.length > 0">
-        <small><strong>Starting point:</strong> {{ tour.keypoints[0].name }}
+        <small><strong>Polazna tačka:</strong> {{ tour.keypoints[0].name }}
           ({{ tour.keypoints[0].lat }}, {{ tour.keypoints[0].lon }})</small>
       </div>
 
+      <div *ngIf="cartErrors[tour.id!]" class="alert alert-danger mt-1" style="font-size:0.85em">{{ cartErrors[tour.id!] }}</div>
+
       <div class="tour-actions">
-        <button class="btn btn-primary" (click)="viewTour(tour.id!)">View Details</button>
+        <button class="btn btn-primary" (click)="viewTour(tour.id!)">Pogledaj</button>
+        <button *ngIf="isTourist"
+          class="btn"
+          [class.btn-success]="!cartTourIds.has(tour.id!) && !purchasedTourIds.has(tour.id!)"
+          [class.btn-warning]="cartTourIds.has(tour.id!) && !purchasedTourIds.has(tour.id!)"
+          [class.btn-secondary]="purchasedTourIds.has(tour.id!)"
+          [disabled]="cartTourIds.has(tour.id!) || purchasedTourIds.has(tour.id!)"
+          (click)="addToCart(tour.id!)">
+          {{ purchasedTourIds.has(tour.id!) ? 'Kupljeno' : cartTourIds.has(tour.id!) ? 'U korpi' : 'Dodaj u korpu' }}
+        </button>
       </div>
     </div>
   </div>

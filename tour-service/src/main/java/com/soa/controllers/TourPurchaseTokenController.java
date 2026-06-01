@@ -50,7 +50,7 @@ public class TourPurchaseTokenController {
             @PathVariable String touristId,
             @PathVariable Long tourId) {
 
-        boolean purchased = tourPurchaseTokenRepository.existsByTouristIdAndTourId(touristId, tourId);
+        boolean purchased = tourPurchaseTokenRepository.existsByTouristIdAndTour_Id(touristId, tourId);
         return ResponseEntity.ok(Map.of("purchased", purchased));
     }
 }

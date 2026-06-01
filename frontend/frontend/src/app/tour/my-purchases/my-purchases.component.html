@@ -1,0 +1,25 @@
+<div class="purchases-container">
+  <h2>Moje Ture</h2>
+
+  <div *ngIf="loading" class="loading">Učitavanje...</div>
+  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+  <div *ngIf="!loading && purchases.length === 0" class="empty-state">
+    <p>Niste još kupili nijednu turu.</p>
+    <a routerLink="/all-tours" class="btn btn-primary">Pregledaj ture</a>
+  </div>
+
+  <div *ngIf="!loading && purchases.length > 0" class="purchases-list">
+    <div *ngFor="let p of purchases" class="purchase-card">
+      <div class="purchase-info">
+        <h4>Tura #{{ p.tourId }}</h4>
+        <div class="token-row">
+          <span class="token-label">Token:</span>
+          <code class="token-uuid">{{ p.token }}</code>
+        </div>
+        <small class="purchase-date">Kupljeno: {{ p.purchasedAt | date:'dd.MM.yyyy HH:mm' }}</small>
+      </div>
+      <button class="btn btn-primary" (click)="viewTour(p.tourId)">Pogledaj turu</button>
+    </div>
+  </div>
+</div>

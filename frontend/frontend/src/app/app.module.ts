@@ -21,6 +21,9 @@ import { TourKeypointsComponent } from './tour/tour-keypoints/tour-keypoints.com
 import { TourReviewsComponent } from './tour/tour-reviews/tour-reviews.component';
 import { RouterModule } from '@angular/router';
 import { AllToursComponent } from './tour/all-tours/all-tours.component';
+import { CartComponent } from './tour/cart/cart.component';
+import { MyPurchasesComponent } from './tour/my-purchases/my-purchases.component';
+import { CurrencyPipe } from '@angular/common';
 
 @NgModule({
   declarations: [
@@ -39,7 +42,9 @@ import { AllToursComponent } from './tour/all-tours/all-tours.component';
     TourKeypointsComponent,
     TourReviewsComponent,
     AllToursComponent,
-    PositionSimulatorComponent
+    PositionSimulatorComponent,
+    CartComponent,
+    MyPurchasesComponent
   ],
   imports: [
     BrowserModule,
@@ -47,10 +52,11 @@ import { AllToursComponent } from './tour/all-tours/all-tours.component';
     HttpClientModule,
     FormsModule,
     ReactiveFormsModule,
-    RouterModule 
+    RouterModule
   ],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
+    CurrencyPipe
   ],
   bootstrap: [AppComponent]
 })

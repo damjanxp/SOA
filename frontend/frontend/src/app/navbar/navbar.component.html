@@ -4,27 +4,26 @@
 
     <div class="nav-actions" *ngIf="authService.isLoggedIn()">
       <div class="nav-links">
-        <a routerLink="/blogs">Blogs</a>
-        <a routerLink="/blogs/new">Create blog</a>
+        <a routerLink="/blogs">Blogovi</a>
+        <a routerLink="/blogs/new">Novi blog</a>
 
-        <!-- Guide vidi svoje ture i kreiranje -->
         <ng-container *ngIf="authService.getRole() === 'guide'">
-          <a routerLink="/tours">My Tours</a>
-          <a routerLink="/tours/new">New Tour</a>
+          <a routerLink="/tours">Moje ture</a>
+          <a routerLink="/tours/new">Nova tura</a>
         </ng-container>
 
-        <!-- Turista vidi sve ture i simulator -->
         <ng-container *ngIf="authService.getRole() === 'tourist'">
-          <a routerLink="/all-tours">Tours</a>
+          <a routerLink="/all-tours">Ture</a>
+          <a routerLink="/cart">Korpa</a>
+          <a routerLink="/my-purchases">Moje ture</a>
           <a routerLink="/simulator">Simulator pozicije</a>
         </ng-container>
 
-
-        <a routerLink="/profile">Profile</a>
-        <a *ngIf="authService.getRole() === 'admin'" routerLink="/users">Users</a>
+        <a routerLink="/profile">Profil</a>
+        <a *ngIf="authService.getRole() === 'admin'" routerLink="/users">Korisnici</a>
       </div>
 
-      <button class="logout-btn" (click)="logout()">Logout</button>
+      <button class="logout-btn" (click)="logout()">Odjava</button>
     </div>
   </div>
 </nav>

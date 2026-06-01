@@ -10,6 +10,6 @@ import java.util.Optional;
 @Repository
 public interface TourPurchaseTokenRepository extends JpaRepository<TourPurchaseToken, Long> {
     List<TourPurchaseToken> findByTouristId(String touristId);
-    Optional<TourPurchaseToken> findByTouristIdAndTourId(String touristId, Long tourId);
-    boolean existsByTouristIdAndTourId(String touristId, Long tourId);
+    Optional<TourPurchaseToken> findByTouristIdAndTour_Id(String touristId, Long tourId);
+    boolean existsByTouristIdAndTour_Id(String touristId, Long tourId);
 }

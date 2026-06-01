@@ -19,8 +19,8 @@ export class TourFormComponent implements OnInit {
   tour: Tour | null = null;
 
   difficulties = ['EASY', 'MEDIUM', 'HARD'];
-  transportTypes = ['WALK', 'BIKE', 'CAR'];
-  transportTypeLabels: Record<string, string> = { WALK: '🚶 Walk', BIKE: '🚴 Bike', CAR: '🚗 Car' };
+  transportTypes = ['WALKING', 'BICYCLE', 'CAR'];
+  transportTypeLabels: Record<string, string> = { WALKING: '🚶 Peške', BICYCLE: '🚴 Bicikl', CAR: '🚗 Auto' };
 
   get name() { return this.tourForm.get('name'); }
   get description() { return this.tourForm.get('description'); }
@@ -30,12 +30,17 @@ export class TourFormComponent implements OnInit {
 
   // Edit mode: loaded from backend
   transportTimes: any[] = [];
-  pendingTransportTimes: { type: string; durationMinutes: number }[] = [];
+  pendingTransportTimes: { transportType: string; durationMinutes: number }[] = [];
 
   ttType = 'WALKING';
   ttDuration = 30;
   ttError = '';
   ttLoading = false;
+
+  // Inline edit state
+  editingTtId: number | null = null;
+  editTtType = 'WALKING';
+  editTtDuration = 30;
 
   constructor(
     private fb: FormBuilder,
@@ -106,12 +111,12 @@ export class TourFormComponent implements OnInit {
 
     if (this.isEditMode && this.tourId) {
       this.ttLoading = true;
-      this.tourService.addTransportTime(this.tourId, { transportType: this.ttType, timeMinutes: this.ttDuration }).subscribe({
+      this.tourService.addTransportTime(this.tourId, { transportType: this.ttType, durationMinutes: this.ttDuration }).subscribe({
         next: (item) => { this.transportTimes.push(item); this.ttLoading = false; },
         error: (err) => { this.ttError = err?.error?.message || 'Greška'; this.ttLoading = false; }
       });
     } else {
-      this.pendingTransportTimes.push({ type: this.ttType, durationMinutes: this.ttDuration });
+      this.pendingTransportTimes.push({ transportType: this.ttType, durationMinutes: this.ttDuration });
     }
   }
 
@@ -124,6 +129,35 @@ export class TourFormComponent implements OnInit {
     this.tourService.deleteTransportTime(this.tourId, id).subscribe({
       next: () => { this.transportTimes = this.transportTimes.filter(t => t.id !== id); },
       error: () => {}
+    });
+  }
+
+  startEditTransportTime(tt: any): void {
+    this.editingTtId = tt.id;
+    this.editTtType = tt.transportType;
+    this.editTtDuration = tt.durationMinutes;
+  }
+
+  cancelEditTransportTime(): void {
+    this.editingTtId = null;
+  }
+
+  saveEditTransportTime(): void {
+    if (!this.tourId || this.editingTtId === null) return;
+    if (this.editTtDuration < 1) { this.ttError = 'Trajanje mora biti najmanje 1 minuta'; return; }
+    this.ttLoading = true;
+    this.ttError = '';
+    this.tourService.updateTransportTime(this.tourId, this.editingTtId, {
+      transportType: this.editTtType,
+      durationMinutes: this.editTtDuration
+    }).subscribe({
+      next: (updated) => {
+        const idx = this.transportTimes.findIndex(t => t.id === this.editingTtId);
+        if (idx !== -1) this.transportTimes[idx] = updated;
+        this.editingTtId = null;
+        this.ttLoading = false;
+      },
+      error: (err) => { this.ttError = err?.error?.message || 'Greška pri izmjeni'; this.ttLoading = false; }
     });
   }
 
@@ -167,8 +201,8 @@ export class TourFormComponent implements OnInit {
           }
           const requests = this.pendingTransportTimes.map(tt =>
             this.tourService.addTransportTime(created.id as number, {
-              transportType: tt.type,
-              timeMinutes: tt.durationMinutes
+              transportType: tt.transportType,
+              durationMinutes: tt.durationMinutes
             })
           );
           return forkJoin(requests).pipe(switchMap(() => of({ tour: created })));

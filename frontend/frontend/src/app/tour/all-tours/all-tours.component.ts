@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { TourService, Tour } from '../tour.service';
+import { AuthService } from '../../auth/auth.service';
 
 @Component({
   selector: 'app-all-tours',
@@ -11,11 +12,37 @@ export class AllToursComponent implements OnInit {
   tours: Tour[] = [];
   loading = false;
   error = '';
+  cartMessages: { [id: number]: string } = {};
+  cartErrors: { [id: number]: string } = {};
+  cartTourIds: Set<number> = new Set();
+  purchasedTourIds: Set<number> = new Set();
 
-  constructor(private tourService: TourService, private router: Router) {}
+  constructor(
+    private tourService: TourService,
+    private router: Router,
+    private authService: AuthService
+  ) {}
+
+  get isTourist(): boolean {
+    return this.authService.getRole() === 'tourist';
+  }
 
   ngOnInit(): void {
     this.loadTours();
+    this.loadCartAndPurchases();
+  }
+
+  loadCartAndPurchases(): void {
+    const userId = this.authService.getUserId();
+    if (!userId) return;
+    this.tourService.getCart(userId).subscribe({
+      next: (cart) => { this.cartTourIds = new Set(cart.items.map(i => i.tourId)); },
+      error: () => {}
+    });
+    this.tourService.getPurchases(userId).subscribe({
+      next: (purchases) => { this.purchasedTourIds = new Set(purchases.map((p: any) => p.tourId)); },
+      error: () => {}
+    });
   }
 
   loadTours(): void {
@@ -34,5 +61,16 @@ export class AllToursComponent implements OnInit {
 
   viewTour(id: number): void {
     this.router.navigate(['/tours', id]);
+  }
+
+  addToCart(tourId: number): void {
+    const userId = this.authService.getUserId();
+    if (!userId) return;
+    this.cartMessages[tourId] = '';
+    this.cartErrors[tourId] = '';
+    this.tourService.addToCart(userId, tourId).subscribe({
+      next: () => { this.cartTourIds.add(tourId); },
+      error: (err) => { this.cartErrors[tourId] = err?.error?.message || 'Greška pri dodavanju u korpu'; }
+    });
   }
 }

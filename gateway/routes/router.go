@@ -210,6 +210,7 @@ func SetupRouter(r *gin.Engine, tourGrpc *clients.TourGrpcClient, publishSaga *s
 		// Transport times
 		protected.POST("/tours/:id/transport-times", ReverseProxy(tourURL))
 		protected.GET("/tours/:id/transport-times", ReverseProxy(tourURL))
+		protected.PUT("/tours/:id/transport-times/:ttId", ReverseProxy(tourURL))
 		protected.DELETE("/tours/:id/transport-times/:ttId", ReverseProxy(tourURL))
 
 		// Tour service — recenzije
@@ -217,10 +218,9 @@ func SetupRouter(r *gin.Engine, tourGrpc *clients.TourGrpcClient, publishSaga *s
 		protected.GET("/tours/:id/reviews", ReverseProxy(tourURL))
 
 		// Tour service — korpa i kupovina
-		protected.POST("/tours/:id/cart", ReverseProxy(tourURL))
-		protected.GET("/cart", ReverseProxy(tourURL))
-		protected.DELETE("/cart/:itemId", ReverseProxy(tourURL))
-		protected.POST("/purchases", ReverseProxy(tourURL))
-		protected.GET("/purchases", ReverseProxy(tourURL))
+		protected.Any("/cart", ReverseProxy(tourURL))
+		protected.Any("/cart/*path", ReverseProxy(tourURL))
+		protected.Any("/purchases", ReverseProxy(tourURL))
+		protected.Any("/purchases/*path", ReverseProxy(tourURL))
 	}
 }

@@ -1,0 +1,43 @@
+<div class="cart-container">
+  <h2>🛒 Moja Korpa</h2>
+
+  <div *ngIf="loading" class="loading">Učitavanje...</div>
+  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+  <div *ngIf="!loading && cart">
+    <div *ngIf="cart.items?.length === 0" class="empty-cart">
+      <p>Vaša korpa je prazna.</p>
+      <a routerLink="/all-tours" class="btn btn-primary">Pregledaj ture</a>
+    </div>
+
+    <div *ngIf="(cart.items?.length ?? 0) > 0">
+      <div class="cart-item" *ngFor="let item of cart.items">
+        <div class="cart-item-info">
+          <span class="tour-name">{{ item.tourName }}</span>
+          <span class="tour-price">{{ item.price | currency:'EUR' }}</span>
+        </div>
+        <button class="btn btn-sm btn-danger" (click)="removeItem(item.tourId)">Ukloni</button>
+      </div>
+
+      <div class="cart-total">
+        <strong>Ukupno: {{ cart.totalPrice | currency:'EUR' }}</strong>
+      </div>
+
+      <div *ngIf="checkoutMessage" class="alert alert-success mt-2">{{ checkoutMessage }}</div>
+      <div *ngIf="checkoutError" class="alert alert-danger mt-2">{{ checkoutError }}</div>
+
+      <button class="btn btn-success btn-checkout" (click)="checkout()" [disabled]="checkoutLoading">
+        {{ checkoutLoading ? 'Obradujem...' : '✅ Kupi' }}
+      </button>
+
+      <div *ngIf="checkoutTokens.length > 0" class="checkout-tokens mt-3">
+        <h4>Vaši tokeni pristupa:</h4>
+        <div *ngFor="let t of checkoutTokens" class="token-item">
+          <span class="token-tour">Tura #{{ t.tourId }}:</span>
+          <code class="token-uuid">{{ t.token }}</code>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+

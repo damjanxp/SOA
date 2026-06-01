@@ -244,7 +244,7 @@ public class TourService {
                         "Tour not found with id: " + tourId));
 
         boolean hasPurchased = touristId != null &&
-                purchaseTokenRepository.existsByTouristIdAndTourId(touristId, tourId);
+                purchaseTokenRepository.existsByTouristIdAndTour_Id(touristId, tourId);
 
         if (hasPurchased) {
             return mapToFullDTO(tour);

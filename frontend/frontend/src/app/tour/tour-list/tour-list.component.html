@@ -1,7 +1,7 @@
 <div class="tour-list-container">
   <div class="header">
-    <h1>My Tours</h1>
-    <button class="btn btn-primary" (click)="createNewTour()">+ New Tour</button>
+    <h1>Moje ture</h1>
+    <button class="btn btn-primary" (click)="createNewTour()">+ Nova tura</button>
   </div>
 
   <div *ngIf="error" class="alert alert-danger">
@@ -9,11 +9,11 @@
   </div>
 
   <div *ngIf="loading" class="loading">
-    Loading...
+    Učitavanje...
   </div>
 
   <div *ngIf="!loading && tours.length === 0" class="empty-state">
-    <p>You have no created tours. Create your first tour!</p>
+    <p>Nemate kreiranih tura. Kreirajte svoju prvu turu!</p>
   </div>
 
   <div *ngIf="!loading && tours.length > 0" class="tours-grid">
@@ -27,13 +27,13 @@
 
       <div class="tour-meta">
         <span class="meta-item">
-          <strong>Difficulty:</strong> {{ tour.difficulty }}
+          <strong>Težina:</strong> {{ tour.difficulty }}
         </span>
         <span class="meta-item">
-          <strong>Length:</strong> {{ tour.lengthKm }} km
+          <strong>Dužina:</strong> {{ tour.lengthKm | number:'1.0-0' }} km
         </span>
         <span class="meta-item">
-          <strong>Price:</strong> {{ tour.price }} $
+          <strong>Cena:</strong> {{ tour.price }} €
         </span>
       </div>
 
@@ -42,11 +42,11 @@
       </div>
 
       <div class="tour-keypoints">
-        <small><strong>Key Points:</strong> {{ tour.keypoints?.length || 0 }}</small>
+        <small><strong>Ključne tačke:</strong> {{ tour.keypoints?.length || 0 }}</small>
       </div>
       <div class="tour-dates">
-        <small *ngIf="tour.status === 'PUBLISHED' && tour['publishedAt']"><strong>Published:</strong> {{ tour['publishedAt'] | date:'short' }}</small>
-        <small *ngIf="tour.status === 'ARCHIVED' && tour['archivedAt']"><strong>Archived:</strong> {{ tour['archivedAt'] | date:'short' }}</small>
+        <small *ngIf="tour.status === 'PUBLISHED' && tour['publishedAt']"><strong>Objavljeno:</strong> {{ tour['publishedAt'] | date:'short' }}</small>
+        <small *ngIf="tour.status === 'ARCHIVED' && tour['archivedAt']"><strong>Arhivirano:</strong> {{ tour['archivedAt'] | date:'short' }}</small>
       </div>
 
       <div *ngIf="tourErrors[tour.id!]" class="alert alert-danger mt-1" style="font-size:0.85em">
@@ -57,20 +57,20 @@
       </div>
 
       <div class="tour-actions">
-        <button class="btn btn-sm btn-info" (click)="viewTour(tour.id!)">View</button>
+        <button class="btn btn-sm btn-info" (click)="viewTour(tour.id!)">Pogledaj</button>
         <button class="btn btn-sm btn-success" (click)="publishTour(tour.id!)"
                 *ngIf="tour.status === 'DRAFT'">
-          Publish
+          Objavi
         </button>
         <button class="btn btn-sm btn-warning" (click)="archiveTour(tour.id!)"
                 *ngIf="tour.status === 'PUBLISHED'">
-          Archive
+          Arhiviraj
         </button>
         <button class="btn btn-sm btn-secondary" (click)="reactivateTour(tour.id!)"
                 *ngIf="tour.status === 'ARCHIVED'">
-          Reactivate
+          Reaktiviraj
         </button>
-        <button class="btn btn-sm btn-danger" (click)="deleteTour(tour.id!)">Delete</button>
+        <button class="btn btn-sm btn-danger" (click)="deleteTour(tour.id!)">Obriši</button>
       </div>
     </div>
   </div>

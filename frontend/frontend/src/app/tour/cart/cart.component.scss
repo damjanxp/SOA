@@ -1,0 +1,51 @@
+.cart-container {
+  max-width: 700px;
+  margin: 40px auto;
+  padding: 0 20px;
+
+  h2 { margin-bottom: 24px; }
+}
+
+.cart-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  background: #fff;
+
+  .cart-item-info {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+  }
+
+  .tour-name { font-weight: 500; }
+  .tour-price { color: #2e7d32; font-weight: 600; }
+}
+
+.cart-total {
+  text-align: right;
+  font-size: 1.2rem;
+  margin: 16px 0;
+}
+
+.btn-checkout {
+  width: 100%;
+  padding: 12px;
+  font-size: 1rem;
+}
+
+.empty-cart {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}
+
+.alert { padding: 10px 14px; border-radius: 6px; margin-bottom: 12px; }
+.alert-success { background: #e8f5e9; color: #2e7d32; }
+.alert-danger { background: #ffebee; color: #c62828; }
+.mt-2 { margin-top: 12px; }
+

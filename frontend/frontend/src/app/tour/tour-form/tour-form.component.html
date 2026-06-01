@@ -1,6 +1,6 @@
 <div class="tour-form-container">
   <div class="form-header">
-    <h1>{{ isEditMode ? 'Edit tour' : 'New tour' }}</h1>
+    <h1>{{ isEditMode ? 'Uredi turu' : 'Nova tura' }}</h1>
   </div>
 
   <div *ngIf="error" class="alert alert-danger">
@@ -11,45 +11,45 @@
     <form [formGroup]="tourForm" (ngSubmit)="onSubmit()" class="tour-form">
 
       <div class="form-group">
-        <label for="name">Tour Name *</label>
+        <label for="name">Naziv ture *</label>
         <input
           type="text"
           id="name"
           formControlName="name"
           class="form-control"
-          placeholder="Enter tour name"
+          placeholder="Unesite naziv ture"
         >
         <div *ngIf="name?.invalid && name?.touched" class="error-message">
-          <small *ngIf="name?.errors?.['required']">Name is required</small>
-          <small *ngIf="name?.errors?.['minlength']">Name must be at least 3 characters long</small>
+          <small *ngIf="name?.errors?.['required']">Naziv je obavezan</small>
+          <small *ngIf="name?.errors?.['minlength']">Naziv mora imati najmanje 3 karaktera</small>
         </div>
       </div>
 
       <div class="form-group">
-        <label for="description">Description *</label>
+        <label for="description">Opis *</label>
         <textarea
           id="description"
           formControlName="description"
           class="form-control"
           rows="5"
-          placeholder="Enter tour description"
+          placeholder="Unesite opis ture"
         ></textarea>
         <div *ngIf="description?.invalid && description?.touched" class="error-message">
-          <small *ngIf="description?.errors?.['required']">Description is required</small>
-          <small *ngIf="description?.errors?.['minlength']">Description must be at least 10 characters long</small>
+          <small *ngIf="description?.errors?.['required']">Opis je obavezan</small>
+          <small *ngIf="description?.errors?.['minlength']">Opis mora imati najmanje 10 karaktera</small>
         </div>
       </div>
 
       <div class="form-row">
         <div class="form-group">
-          <label for="difficulty">Difficulty *</label>
+          <label for="difficulty">Težina *</label>
           <select id="difficulty" formControlName="difficulty" class="form-control">
             <option *ngFor="let diff of difficulties" [value]="diff">{{ diff }}</option>
           </select>
         </div>
 
         <div class="form-group">
-          <label for="lengthKm">Length (km) *</label>
+          <label for="lengthKm">Dužina (km) *</label>
           <input
             type="number"
             id="lengthKm"
@@ -58,73 +58,89 @@
             placeholder="0"
           >
           <div *ngIf="lengthKm?.invalid && lengthKm?.touched" class="error-message">
-            <small *ngIf="lengthKm?.errors?.['required']">Length is required</small>
-            <small *ngIf="lengthKm?.errors?.['min']">Length cannot be negative</small>
+            <small *ngIf="lengthKm?.errors?.['required']">Dužina je obavezna</small>
+            <small *ngIf="lengthKm?.errors?.['min']">Dužina ne može biti negativna</small>
           </div>
         </div>
       </div>
 
       <div class="form-group">
-        <label for="tags">Tags (comma-separated)</label>
+        <label for="tags">Oznake (razdvojene zarezom)</label>
         <input
           type="text"
           id="tags"
           formControlName="tags"
           class="form-control"
-          placeholder="e.g.: hiking, nature, adventure"
+          placeholder="npr: planinarenje, priroda, avantura"
         >
-        <small class="text-muted">Tags are separated by commas</small>
+        <small class="text-muted">Oznake se razdvajaju zarezima</small>
       </div>
 
       <div class="form-actions">
         <button type="submit" class="btn btn-primary" [disabled]="loading || tourForm.invalid">
-          {{ loading ? 'Saving...' : (isEditMode ? 'Update' : 'Create') }}
+          {{ loading ? 'Čuvanje...' : (isEditMode ? 'Sačuvaj' : 'Kreiraj') }}
         </button>
         <button type="button" class="btn btn-secondary" (click)="cancel()">
-          Cancel
+          Otkaži
         </button>
       </div>
     </form>
   </div>
 
-  <!-- Transport Times -->
+  <!-- Vremena transporta -->
   <div class="transport-times-section">
-    <h3>🕒 Transport Times</h3>
-    <p class="text-muted"><small>At least 1 transport time is required before publishing.</small></p>
+    <h3>Vremena transporta</h3>
+    <p class="text-muted"><small>Potrebno je dodati barem 1 vrijeme transporta prije objavljivanja.</small></p>
 
-    <!-- Edit mode: backend transport times -->
+    <!-- Uredi mod: vremena sa servera -->
     <ng-container *ngIf="isEditMode">
       <div *ngIf="transportTimes.length === 0" class="empty-state">
-        <p>No transport times added yet.</p>
+        <p>Nema dodanih vremena transporta.</p>
       </div>
       <div *ngFor="let tt of transportTimes" class="transport-item">
-        <span class="transport-badge">{{ transportTypeLabels[tt.type] || tt.type }}</span>
-        <span class="transport-duration">{{ tt.durationMinutes }} min</span>
-        <button class="btn btn-sm btn-danger" (click)="deleteTransportTime(tt.id)">✕</button>
+        <!-- Inline forma za uređivanje -->
+        <ng-container *ngIf="editingTtId === tt.id; else viewTt">
+          <select [(ngModel)]="editTtType" [ngModelOptions]="{standalone: true}" class="form-control transport-select">
+            <option *ngFor="let t of transportTypes" [value]="t">{{ transportTypeLabels[t] }}</option>
+          </select>
+          <input type="number" [(ngModel)]="editTtDuration" [ngModelOptions]="{standalone: true}"
+                 class="form-control duration-input" min="1" placeholder="Minuti">
+          <button class="btn btn-sm btn-success" (click)="saveEditTransportTime()" [disabled]="ttLoading">
+            {{ ttLoading ? '...' : 'Sačuvaj' }}
+          </button>
+          <button class="btn btn-sm btn-secondary" (click)="cancelEditTransportTime()">Otkaži</button>
+        </ng-container>
+        <!-- Red za prikaz -->
+        <ng-template #viewTt>
+          <span class="transport-badge">{{ transportTypeLabels[tt.transportType] || tt.transportType }}</span>
+          <span class="transport-duration">{{ tt.durationMinutes }} min</span>
+          <button class="btn btn-sm btn-outline-secondary" (click)="startEditTransportTime(tt)">Uredi</button>
+          <button class="btn btn-sm btn-danger" (click)="deleteTransportTime(tt.id)">Ukloni</button>
+        </ng-template>
       </div>
     </ng-container>
 
-    <!-- Create mode: pending transport times -->
+    <!-- Kreiranje: privremena vremena -->
     <ng-container *ngIf="!isEditMode">
       <div *ngIf="pendingTransportTimes.length === 0" class="empty-state">
-        <p>No transport times added yet.</p>
+        <p>Nema dodanih vremena transporta.</p>
       </div>
       <div *ngFor="let tt of pendingTransportTimes; let i = index" class="transport-item">
-        <span class="transport-badge">{{ transportTypeLabels[tt.type] || tt.type }}</span>
+        <span class="transport-badge">{{ transportTypeLabels[tt.transportType] || tt.transportType }}</span>
         <span class="transport-duration">{{ tt.durationMinutes }} min</span>
-        <button class="btn btn-sm btn-danger" (click)="removePendingTransportTime(i)">✕</button>
+        <button class="btn btn-sm btn-danger" (click)="removePendingTransportTime(i)">Ukloni</button>
       </div>
     </ng-container>
 
-    <!-- Add form -->
+    <!-- Forma za dodavanje -->
     <div class="add-transport-form">
       <select [(ngModel)]="ttType" [ngModelOptions]="{standalone: true}" class="form-control transport-select">
         <option *ngFor="let t of transportTypes" [value]="t">{{ transportTypeLabels[t] }}</option>
       </select>
       <input type="number" [(ngModel)]="ttDuration" [ngModelOptions]="{standalone: true}"
-             class="form-control duration-input" min="1" placeholder="Minutes">
+             class="form-control duration-input" min="1" placeholder="Minuti">
       <button type="button" class="btn btn-outline-primary" (click)="addTransportTime()" [disabled]="ttLoading">
-        {{ ttLoading ? 'Adding...' : '+ Add' }}
+        {{ ttLoading ? 'Dodavanje...' : '+ Dodaj' }}
       </button>
     </div>
     <div *ngIf="ttError" class="alert alert-danger mt-2">{{ ttError }}</div>

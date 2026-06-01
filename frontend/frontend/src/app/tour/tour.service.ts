@@ -41,11 +41,24 @@ export interface Review {
   images: string[];
 }
 
+export interface CartItem {
+  tourId: number;
+  tourName: string;
+  price: number;
+}
+
+export interface CartResponse {
+  touristId: string;
+  items: CartItem[];
+  totalPrice: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class TourService {
   private apiUrl = `${environment.apiBase}/api/tours`;
+  private cartBaseUrl = `${environment.apiBase}/api/cart`;
 
   constructor(private http: HttpClient) { }
 
@@ -90,12 +103,33 @@ export class TourService {
     return this.http.post<any>(`${this.apiUrl}/${tourId}/transport-times`, data);
   }
 
+  updateTransportTime(tourId: number, ttId: number, data: any): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/${tourId}/transport-times/${ttId}`, data);
+  }
+
   deleteTransportTime(tourId: number, ttId: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${tourId}/transport-times/${ttId}`);
   }
 
-  addToCart(tourId: number): Observable<any> {
-    return this.http.post<any>(`${environment.apiBase}/api/tours/${tourId}/cart`, {});
+  // Cart endpoints
+  getCart(userId: string): Observable<CartResponse> {
+    return this.http.get<CartResponse>(`${this.cartBaseUrl}/${userId}`);
+  }
+
+  addToCart(userId: string, tourId: number): Observable<CartResponse> {
+    return this.http.post<CartResponse>(`${this.cartBaseUrl}/${userId}/items`, { tourId });
+  }
+
+  removeFromCart(userId: string, tourId: number): Observable<CartResponse> {
+    return this.http.delete<CartResponse>(`${this.cartBaseUrl}/${userId}/items/${tourId}`);
+  }
+
+  checkout(userId: string): Observable<any> {
+    return this.http.post<any>(`${this.cartBaseUrl}/${userId}/checkout`, {});
+  }
+
+  getPurchases(userId: string): Observable<any[]> {
+    return this.http.get<any[]>(`${environment.apiBase}/api/purchases/${userId}`);
   }
 
   // Keypoint endpoints
