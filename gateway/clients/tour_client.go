@@ -1,8 +1,13 @@
 package clients
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
+	"fmt"
+	"io"
 	"log"
+	"net/http"
 	"os"
 
 	pb "github.com/damjanxp/gateway/pb/tour"
@@ -10,18 +15,26 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-// TourGrpcClient wraps the generated gRPC client for tour-service.
+// TourGrpcClient wraps the gRPC client for tour-service and provides REST API fallbacks.
 type TourGrpcClient struct {
-	conn   *grpc.ClientConn
-	client pb.TourServiceClient
+	conn      *grpc.ClientConn
+	client    pb.TourServiceClient
+	restURL   string
+	httpClient *http.Client
 }
 
-// NewTourGrpcClient dials tour-service gRPC server.
+// NewTourGrpcClient dials tour-service gRPC server and initializes REST API fallback.
 // Address is read from TOUR_GRPC_URL env var (default: tour-service:9093).
+// REST URL is read from TOUR_SERVICE_URL env var (default: http://tour-service:8080).
 func NewTourGrpcClient() *TourGrpcClient {
 	addr := os.Getenv("TOUR_GRPC_URL")
 	if addr == "" {
 		addr = "tour-service:9093"
+	}
+
+	restURL := os.Getenv("TOUR_SERVICE_URL")
+	if restURL == "" {
+		restURL = "http://tour-service:8080"
 	}
 
 	conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
@@ -29,10 +42,12 @@ func NewTourGrpcClient() *TourGrpcClient {
 		log.Fatalf("Failed to connect to tour-service gRPC at %s: %v", addr, err)
 	}
 
-	log.Printf("TourGrpcClient connected to %s", addr)
+	log.Printf("TourGrpcClient connected to gRPC at %s and REST at %s", addr, restURL)
 	return &TourGrpcClient{
-		conn:   conn,
-		client: pb.NewTourServiceClient(conn),
+		conn:      conn,
+		client:    pb.NewTourServiceClient(conn),
+		restURL:   restURL,
+		httpClient: &http.Client{},
 	}
 }
 
@@ -42,8 +57,6 @@ func (t *TourGrpcClient) Close() {
 		t.conn.Close()
 	}
 }
-
-// PublishTour calls TourService.PublishTour via gRPC.
 func (t *TourGrpcClient) PublishTour(ctx context.Context, tourId, authorId string) (*pb.TourActionResponse, error) {
 	return t.client.PublishTour(ctx, &pb.PublishTourRequest{
 		TourId:   tourId,
@@ -63,5 +76,104 @@ func (t *TourGrpcClient) ReactivateTour(ctx context.Context, tourId string) (*pb
 	return t.client.ReactivateTour(ctx, &pb.TourIdRequest{
 		TourId: tourId,
 	})
+}
+
+// AddToCart calls Cart service to add a tour to the tourist's shopping cart.
+// Uses REST API and returns a Go struct CartResponse.
+func (t *TourGrpcClient) AddToCart(ctx context.Context, touristId, tourId string) (map[string]interface{}, error) {
+	url := fmt.Sprintf("%s/api/cart/%s/items", t.restURL, touristId)
+
+	payload := map[string]interface{}{
+		"tourId": tourId,
+	}
+
+	body, err := json.Marshal(payload)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewReader(body))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := t.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode >= 400 {
+		return nil, fmt.Errorf("REST API error: %s", string(respBody))
+	}
+
+	var cartResp map[string]interface{}
+	if err := json.Unmarshal(respBody, &cartResp); err != nil {
+		return nil, err
+	}
+
+	return cartResp, nil
+}
+
+// Checkout calls Cart service to execute checkout and generate purchase tokens.
+// Uses REST API and returns an array of purchase tokens.
+func (t *TourGrpcClient) Checkout(ctx context.Context, touristId string) ([]map[string]interface{}, error) {
+	url := fmt.Sprintf("%s/api/cart/%s/checkout", t.restURL, touristId)
+
+	req, err := http.NewRequestWithContext(ctx, "POST", url, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := t.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode >= 400 {
+		return nil, fmt.Errorf("REST API error: %s", string(respBody))
+	}
+
+	var checkoutResp []map[string]interface{}
+	if err := json.Unmarshal(respBody, &checkoutResp); err != nil {
+		return nil, err
+	}
+
+	return checkoutResp, nil
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Helper functions for safe map value extraction
+// ─────────────────────────────────────────────────────────────────────────────
+
+func getStringValue(data map[string]interface{}, key string) string {
+	if val, ok := data[key]; ok {
+		if str, ok := val.(string); ok {
+			return str
+		}
+	}
+	return ""
+}
+
+func getFloatValue(data map[string]interface{}, key string) float64 {
+	if val, ok := data[key]; ok {
+		if num, ok := val.(float64); ok {
+			return num
+		}
+	}
+	return 0
 }
 

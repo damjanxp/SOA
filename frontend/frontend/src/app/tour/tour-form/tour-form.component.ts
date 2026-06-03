@@ -25,6 +25,7 @@ export class TourFormComponent implements OnInit {
   get name() { return this.tourForm.get('name'); }
   get description() { return this.tourForm.get('description'); }
   get lengthKm() { return this.tourForm.get('lengthKm'); }
+  get price() { return this.tourForm.get('price'); }
 
   cancel(): void { this.router.navigate(['/tours']); }
 
@@ -67,7 +68,8 @@ export class TourFormComponent implements OnInit {
       description: ['', [Validators.required, Validators.minLength(10)]],
       difficulty: ['EASY', Validators.required],
       tags: [''],
-      lengthKm: [0, [Validators.required, Validators.min(0)]]
+      lengthKm: [0, [Validators.required, Validators.min(0)]],
+      price: [0, [Validators.required, Validators.min(0)]]
     });
   }
 
@@ -82,7 +84,8 @@ export class TourFormComponent implements OnInit {
           description: data.description,
           difficulty: data.difficulty,
           tags: data.tags?.join(', ') || '',
-          lengthKm: data.lengthKm
+          lengthKm: data.lengthKm,
+          price: data.price || 0
         });
         this.loading = false;
       },
@@ -178,7 +181,8 @@ export class TourFormComponent implements OnInit {
       description: formValue.description,
       difficulty: formValue.difficulty,
       tags,
-      lengthKm: formValue.lengthKm
+      lengthKm: formValue.lengthKm,
+      price: formValue.price
     };
 
     if (this.isEditMode && this.tourId) {

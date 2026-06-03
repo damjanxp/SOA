@@ -62,6 +62,22 @@
             <small *ngIf="lengthKm?.errors?.['min']">Dužina ne može biti negativna</small>
           </div>
         </div>
+
+        <div class="form-group">
+          <label for="price">Cena (€) *</label>
+          <input
+            type="number"
+            id="price"
+            formControlName="price"
+            class="form-control"
+            placeholder="0"
+            step="0.01"
+          >
+          <div *ngIf="price?.invalid && price?.touched" class="error-message">
+            <small *ngIf="price?.errors?.['required']">Cena je obavezna</small>
+            <small *ngIf="price?.errors?.['min']">Cena ne može biti negativna</small>
+          </div>
+        </div>
       </div>
 
       <div class="form-group">

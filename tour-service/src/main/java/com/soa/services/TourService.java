@@ -48,7 +48,7 @@ public class TourService {
                 .difficulty(Tour.Difficulty.valueOf(request.getDifficulty().toUpperCase()))
                 .tags(request.getTags() != null ? request.getTags() : List.of())
                 .status(Tour.TourStatus.DRAFT)
-                .price(BigDecimal.ZERO)
+                .price(request.getPrice() != null ? request.getPrice() : BigDecimal.ZERO)
                 .lengthKm(request.getLengthKm())
                 .build();
 
@@ -104,6 +104,9 @@ public class TourService {
         tour.setDifficulty(Tour.Difficulty.valueOf(request.getDifficulty().toUpperCase()));
         tour.setTags(request.getTags() != null ? request.getTags() : List.of());
         tour.setLengthKm(request.getLengthKm());
+        if (request.getPrice() != null) {
+            tour.setPrice(request.getPrice());
+        }
 
         return mapToResponse(tourRepository.save(tour));
     }
