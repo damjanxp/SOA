@@ -23,7 +23,11 @@ import net.devh.boot.grpc.server.service.GrpcService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
-
+import com.soa.dtos.CheckNearbyRequest;
+import com.soa.dtos.CheckNearbyResponse;
+import com.soa.dtos.StartExecutionRequest;
+import com.soa.dtos.TourExecutionResponse;
+import com.soa.services.TourExecutionService;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -45,6 +49,7 @@ public class TourGrpcService extends TourServiceGrpc.TourServiceImplBase {
     private final KeypointRepository keypointRepository;
     private final TransportTimeRepository transportTimeRepository;
     private final TourPurchaseTokenRepository tourPurchaseTokenRepository;
+    private final TourExecutionService tourExecutionService;
 
     // â”€â”€ GetTourKeyPoints â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -416,4 +421,92 @@ public class TourGrpcService extends TourServiceGrpc.TourServiceImplBase {
     private boolean isBlank(String s) {
         return s == null || s.isBlank();
     }
+
+
+ 
+    // ── StartTourExecution ─────────────────────────────────────────────────────
+ 
+    @Override
+    public void startTourExecution(StartTourExecutionRequest request,
+                                   StreamObserver<StartTourExecutionResponse> responseObserver) {
+        log.info("gRPC startTourExecution: touristId={}, tourId={}", request.getTouristId(), request.getTourId());
+        try {
+            StartExecutionRequest dto = StartExecutionRequest.builder()
+                    .tourId(Long.parseLong(request.getTourId()))
+                    .startLat(request.getStartLat())
+                    .startLong(request.getStartLong())
+                    .build();
+ 
+            TourExecutionResponse exec = tourExecutionService.startExecution(request.getTouristId(), dto);
+ 
+            StartTourExecutionResponse response = StartTourExecutionResponse.newBuilder()
+                    .setSuccess(true)
+                    .setMessage("Tour execution started successfully")
+                    .setExecutionId(exec.getId())
+                    .setStatus(exec.getStatus())
+                    .setStartedAt(exec.getStartedAt().toString())
+                    .build();
+ 
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+ 
+        } catch (NumberFormatException e) {
+            responseObserver.onError(Status.INVALID_ARGUMENT
+                    .withDescription("Invalid tourId format: " + request.getTourId())
+                    .asRuntimeException());
+        } catch (org.springframework.web.server.ResponseStatusException e) {
+            Status grpcStatus = e.getStatusCode().value() == 403 ? Status.PERMISSION_DENIED
+                    : e.getStatusCode().value() == 404 ? Status.NOT_FOUND
+                    : Status.FAILED_PRECONDITION;
+            responseObserver.onError(grpcStatus
+                    .withDescription(e.getReason())
+                    .asRuntimeException());
+        } catch (RuntimeException e) {
+            log.error("Error in startTourExecution: {}", e.getMessage(), e);
+            responseObserver.onError(Status.INTERNAL
+                    .withDescription(e.getMessage())
+                    .asRuntimeException());
+        }
+    }
+ 
+    // ── CheckNearbyKeyPoint ────────────────────────────────────────────────────
+ 
+    @Override
+    public void checkNearbyKeyPoint(CheckNearbyKeyPointRequest request,
+                                    StreamObserver<CheckNearbyKeyPointResponse> responseObserver) {
+        log.info("gRPC checkNearbyKeyPoint: executionId={}, lat={}, lon={}",
+                request.getExecutionId(), request.getLat(), request.getLon());
+        try {
+            CheckNearbyRequest dto = CheckNearbyRequest.builder()
+                    .lat(request.getLat())
+                    .lon(request.getLon())
+                    .build();
+ 
+            CheckNearbyResponse result = tourExecutionService.checkNearby(request.getExecutionId(), dto);
+ 
+            CheckNearbyKeyPointResponse response = CheckNearbyKeyPointResponse.newBuilder()
+                    .setNearbyFound(result.isNearbyFound())
+                    .setKeyPointId(result.getKeyPointId() != null ? result.getKeyPointId() : 0L)
+                    .setLastActivity(java.time.LocalDateTime.now().toString())
+                    .build();
+ 
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+ 
+        } catch (org.springframework.web.server.ResponseStatusException e) {
+            Status grpcStatus = e.getStatusCode().value() == 404 ? Status.NOT_FOUND
+                    : Status.FAILED_PRECONDITION;
+            responseObserver.onError(grpcStatus
+                    .withDescription(e.getReason())
+                    .asRuntimeException());
+        } catch (RuntimeException e) {
+            log.error("Error in checkNearbyKeyPoint: {}", e.getMessage(), e);
+            responseObserver.onError(Status.INTERNAL
+                    .withDescription(e.getMessage())
+                    .asRuntimeException());
+        }
+    }
+ 
+
+
 }
