@@ -74,8 +74,20 @@ export class TourExecutionComponent implements OnInit, AfterViewInit, OnDestroy 
         this.executionService.startExecution(touristId, this.tourId, position.lat, position.lng).subscribe({
           next: (exec) => {
             this.executionId = exec.id;
+            this.status = exec.status;
+
+            // Učitaj već kompletirana ključna tačka iz baze (bitno pri povratku na stranicu)
+            if (exec.completedKeyPoints && exec.completedKeyPoints.length > 0) {
+              exec.completedKeyPoints.forEach((c: any) => {
+                this.completedKeyPointIds.add(c.keyPointId);
+              });
+            }
+
             this.loading = false;
-            this.startInterval();
+
+            if (this.status === 'ACTIVE') {
+              this.startInterval();
+            }
           },
           error: (err) => {
             this.error = err?.error?.message || 'Greška pri pokretanju ture.';
@@ -114,6 +126,12 @@ export class TourExecutionComponent implements OnInit, AfterViewInit, OnDestroy 
         .addTo(this.map)
         .bindPopup(`<b>${kp.name}</b><br>${kp.description}`);
       this.keypointMarkers.set(kp.id, marker);
+    });
+
+    // Oboji zeleno tačke koje su već kompletiranie (pri povratku na stranicu)
+    this.completedKeyPointIds.forEach(id => {
+      const marker = this.keypointMarkers.get(id);
+      if (marker) marker.setIcon(iconGreen);
     });
   }
 

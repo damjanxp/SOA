@@ -16,4 +16,7 @@ public interface TourExecutionRepository extends JpaRepository<TourExecution, Lo
 
     boolean existsByTouristIdAndTourIdAndStatus(String touristId, Long tourId,
                                                 TourExecution.ExecutionStatus status);
+
+    Optional<TourExecution> findByTouristIdAndTourIdAndStatus(String touristId, Long tourId,
+                                                               TourExecution.ExecutionStatus status);
 }

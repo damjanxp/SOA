@@ -15,6 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -22,8 +23,7 @@ import java.util.stream.Collectors;
 @Transactional
 public class TourExecutionService {
 
-    // Radius u km unutar kojeg se smatra da je turista "blizu" tacke
-    private static final double PROXIMITY_RADIUS_KM = 0.1; // 100 metara
+    private static final double PROXIMITY_RADIUS_KM = 0.1;
 
     private final TourExecutionRepository executionRepository;
     private final CompletedKeyPointRepository completedKeyPointRepository;
@@ -31,33 +31,32 @@ public class TourExecutionService {
     private final KeypointRepository keypointRepository;
     private final TourPurchaseTokenRepository purchaseTokenRepository;
 
-    /**
-     * Pokrece novu TourExecution sesiju.
-     * Preduslov: tura mora biti kupljena i mora biti PUBLISHED ili ARCHIVED.
-     */
     public TourExecutionResponse startExecution(String touristId, StartExecutionRequest request) {
 
         Long tourId = request.getTourId();
 
-        // 1. Provjera da li tura postoji
         Tour tour = tourRepository.findById(tourId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Tour not found with id: " + tourId));
 
-        // 2. Tura mora biti PUBLISHED ili ARCHIVED (ne DRAFT)
         if (tour.getStatus() == Tour.TourStatus.DRAFT) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Cannot start a draft tour");
         }
 
-        // 3. Preduslov: tura mora biti kupljena
         boolean purchased = purchaseTokenRepository.existsByTouristIdAndTour_Id(touristId, tourId);
         if (!purchased) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,
                     "You must purchase this tour before starting it");
         }
 
-        // 4. Kreiranje sesije
+        // Ako već postoji aktivna sesija — vrati je umesto da praviš novu
+        Optional<TourExecution> existing = executionRepository
+                .findByTouristIdAndTourIdAndStatus(touristId, tourId, TourExecution.ExecutionStatus.ACTIVE);
+        if (existing.isPresent()) {
+            return mapToResponse(existing.get());
+        }
+
         TourExecution execution = TourExecution.builder()
                 .touristId(touristId)
                 .tourId(tourId)
@@ -66,14 +65,9 @@ public class TourExecutionService {
                 .startLong(request.getStartLong())
                 .build();
 
-        TourExecution saved = executionRepository.save(execution);
-        return mapToResponse(saved);
+        return mapToResponse(executionRepository.save(execution));
     }
 
-    /**
-     * Provjerava da li je turista blizu neke ključne tačke.
-     * Uvijek ažurira lastActivityAt, a ako je blizu — bilježi CompletedKeyPoint.
-     */
     public CheckNearbyResponse checkNearby(Long executionId, CheckNearbyRequest request) {
 
         TourExecution execution = executionRepository.findById(executionId)
@@ -85,7 +79,6 @@ public class TourExecutionService {
                     "Tour execution is not active");
         }
 
-        // Uvijek azuriraj lastActivityAt
         execution.setLastActivityAt(LocalDateTime.now());
 
         List<Keypoint> keypoints = keypointRepository.findByTourIdOrderByOrderIndex(execution.getTourId());
@@ -93,7 +86,6 @@ public class TourExecutionService {
         Long foundKeyPointId = null;
 
         for (Keypoint kp : keypoints) {
-            // Preskoci vec kompletiranu tacku
             if (completedKeyPointRepository.existsByTourExecutionIdAndKeyPointId(executionId, kp.getId())) {
                 continue;
             }
@@ -104,7 +96,6 @@ public class TourExecutionService {
             );
 
             if (distanceKm <= PROXIMITY_RADIUS_KM) {
-                // Turista je dostigao ovu tacku — evidentiraj
                 CompletedKeyPoint completed = CompletedKeyPoint.builder()
                         .tourExecution(execution)
                         .keyPointId(kp.getId())
@@ -112,7 +103,7 @@ public class TourExecutionService {
                 completedKeyPointRepository.save(completed);
                 execution.getCompletedKeyPoints().add(completed);
                 foundKeyPointId = kp.getId();
-                break; // jedna tacka po pozivu
+                break;
             }
         }
 
@@ -124,9 +115,6 @@ public class TourExecutionService {
                 .build();
     }
 
-    /**
-     * Turista završava turu (status → COMPLETED).
-     */
     public TourExecutionResponse completeExecution(Long executionId, String touristId) {
         TourExecution execution = getActiveExecution(executionId, touristId);
         execution.setStatus(TourExecution.ExecutionStatus.COMPLETED);
@@ -135,9 +123,6 @@ public class TourExecutionService {
         return mapToResponse(executionRepository.save(execution));
     }
 
-    /**
-     * Turista napušta turu (status → ABANDONED).
-     */
     public TourExecutionResponse abandonExecution(Long executionId, String touristId) {
         TourExecution execution = getActiveExecution(executionId, touristId);
         execution.setStatus(TourExecution.ExecutionStatus.ABANDONED);
@@ -145,8 +130,6 @@ public class TourExecutionService {
         execution.setLastActivityAt(LocalDateTime.now());
         return mapToResponse(executionRepository.save(execution));
     }
-
-    // ─── Helpers ──────────────────────────────────────────────────────────────
 
     private TourExecution getActiveExecution(Long executionId, String touristId) {
         TourExecution execution = executionRepository.findById(executionId)
