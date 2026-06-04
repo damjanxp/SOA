@@ -85,4 +85,17 @@ public class TourExecutionController {
         }
         return (String) userIdObj;
     }
+    /**
+ * Vrati aktivnu ili poslednju sesiju za datu turu i turistu.
+ * GET /api/tour-execution/status?touristId=X&tourId=Y
+ */
+@GetMapping("/status")
+public ResponseEntity<TourExecutionResponse> getExecutionStatus(
+        @RequestParam String touristId,
+        @RequestParam Long tourId) {
+
+    return executionService.getLatestExecution(touristId, tourId)
+            .map(ResponseEntity::ok)
+            .orElse(ResponseEntity.noContent().build());
+}
 }

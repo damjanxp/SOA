@@ -7,7 +7,7 @@
   <div *ngIf="error" class="alert alert-danger">
     {{ error }}
     <br>
-    <button class="btn btn-secondary" (click)="router.navigate(['/all-tours'])">Nazad</button>
+    <button class="btn btn-secondary" (click)="router.navigate(['/my-purchases'])">Nazad</button>
   </div>
 
   <div *ngIf="loading && !error" class="loading">Pokretanje ture...</div>
@@ -27,13 +27,26 @@
       </div>
     </div>
 
-    <div class="action-buttons">
-      <button class="btn btn-success" (click)="completeTour()" [disabled]="status !== 'ACTIVE'">
+    <div class="action-buttons" *ngIf="status === 'ACTIVE'">
+      <button class="btn btn-success"
+        (click)="completeTour()"
+        [disabled]="!allKeypointsCompleted"
+        [title]="allKeypointsCompleted ? 'Završi turu' : 'Obiđite sve tačke da biste završili turu'">
         ✅ Završi turu
+        <span *ngIf="!allKeypointsCompleted" style="font-size:0.8em; opacity:0.8">
+          ({{ completedKeyPointIds.size }}/{{ keypoints.length }})
+        </span>
       </button>
-      <button class="btn btn-danger" (click)="abandonTour()" [disabled]="status !== 'ACTIVE'">
+      <button class="btn btn-danger" (click)="abandonTour()">
         🚪 Napusti turu
       </button>
+    </div>
+
+    <div *ngIf="status === 'COMPLETED'" class="completed-banner">
+      ✅ Tura je završena!
+    </div>
+    <div *ngIf="status === 'ABANDONED'" class="abandoned-banner">
+      Tura je napuštena.
     </div>
   </div>
 </div>

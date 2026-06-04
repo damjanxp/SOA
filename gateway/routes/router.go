@@ -228,5 +228,6 @@ func SetupRouter(r *gin.Engine, tourGrpc *clients.TourGrpcClient, publishSaga *s
 		protected.POST("/tour-execution/:executionId/check-nearby", ReverseProxy(tourURL))
 		protected.POST("/tour-execution/:executionId/complete", ReverseProxy(tourURL))
 		protected.POST("/tour-execution/:executionId/abandon", ReverseProxy(tourURL))
+		protected.GET("/tour-execution/status", ReverseProxy(tourURL))
 	}
 }

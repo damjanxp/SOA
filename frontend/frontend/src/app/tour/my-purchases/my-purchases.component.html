@@ -13,13 +13,36 @@
     <div *ngFor="let p of purchases" class="purchase-card">
       <div class="purchase-info">
         <h4>Tura #{{ p.tourId }}</h4>
+
+        <span class="status-badge"
+          [ngClass]="{
+            'badge-active': executionStatusMap[p.tourId] === 'ACTIVE',
+            'badge-completed': executionStatusMap[p.tourId] === 'COMPLETED',
+            'badge-abandoned': executionStatusMap[p.tourId] === 'ABANDONED',
+            'badge-none': !executionStatusMap[p.tourId]
+          }">
+          {{ executionStatusMap[p.tourId] || 'Nije pokrenuta' }}
+        </span>
+
         <div class="token-row">
           <span class="token-label">Token:</span>
           <code class="token-uuid">{{ p.token }}</code>
         </div>
         <small class="purchase-date">Kupljeno: {{ p.purchasedAt | date:'dd.MM.yyyy HH:mm' }}</small>
       </div>
-      <button class="btn btn-primary" (click)="viewTour(p.tourId)">Pogledaj turu</button>
+
+      <div class="card-actions">
+        <button class="btn btn-secondary" (click)="viewTour(p.tourId)">Detalji</button>
+        <button
+          class="btn"
+          [class.btn-primary]="!executionStatusMap[p.tourId] || executionStatusMap[p.tourId] === 'ABANDONED'"
+          [class.btn-warning]="executionStatusMap[p.tourId] === 'ACTIVE'"
+          [class.btn-success]="executionStatusMap[p.tourId] === 'COMPLETED'"
+          [disabled]="isStartDisabled(p.tourId)"
+          (click)="startOrContinue(p.tourId)">
+          {{ getButtonLabel(p.tourId) }}
+        </button>
+      </div>
     </div>
   </div>
 </div>

@@ -173,4 +173,10 @@ public class TourExecutionService {
                 .completedKeyPoints(completedList)
                 .build();
     }
+
+    public Optional<TourExecutionResponse> getLatestExecution(String touristId, Long tourId) {
+    return executionRepository
+            .findTopByTouristIdAndTourIdOrderByStartedAtDesc(touristId, tourId)
+            .map(this::mapToResponse);
+}
 }

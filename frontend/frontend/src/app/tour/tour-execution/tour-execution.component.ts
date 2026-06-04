@@ -56,6 +56,10 @@ export class TourExecutionComponent implements OnInit, AfterViewInit, OnDestroy 
     private authService: AuthService
   ) {}
 
+  get allKeypointsCompleted(): boolean {
+    return this.keypoints.length > 0 && this.completedKeyPointIds.size === this.keypoints.length;
+  }
+
   ngOnInit(): void {
     this.tourId = +this.route.snapshot.params['tourId'];
     const position = this.positionService.getCurrentLocation();
@@ -76,7 +80,6 @@ export class TourExecutionComponent implements OnInit, AfterViewInit, OnDestroy 
             this.executionId = exec.id;
             this.status = exec.status;
 
-            // Učitaj već kompletirana ključna tačka iz baze (bitno pri povratku na stranicu)
             if (exec.completedKeyPoints && exec.completedKeyPoints.length > 0) {
               exec.completedKeyPoints.forEach((c: any) => {
                 this.completedKeyPointIds.add(c.keyPointId);
@@ -128,7 +131,6 @@ export class TourExecutionComponent implements OnInit, AfterViewInit, OnDestroy 
       this.keypointMarkers.set(kp.id, marker);
     });
 
-    // Oboji zeleno tačke koje su već kompletiranie (pri povratku na stranicu)
     this.completedKeyPointIds.forEach(id => {
       const marker = this.keypointMarkers.get(id);
       if (marker) marker.setIcon(iconGreen);
@@ -151,11 +153,29 @@ export class TourExecutionComponent implements OnInit, AfterViewInit, OnDestroy 
             this.showToast(`Stigli ste do: ${kp?.name || 'ključne tačke'}`);
             const marker = this.keypointMarkers.get(res.keyPointId);
             if (marker) marker.setIcon(iconGreen);
+
+            // Auto-završi ako su sve tačke kompletiranej
+            if (this.allKeypointsCompleted) {
+              this.stopInterval();
+              this.autoComplete();
+            }
           }
         },
         error: () => {}
       });
     }, 10000);
+  }
+
+  autoComplete(): void {
+    if (!this.executionId) return;
+    this.executionService.completeExecution(this.executionId).subscribe({
+      next: () => {
+        this.status = 'COMPLETED';
+        this.showToast('Čestitamo! Obišli ste sve tačke — tura završena!');
+        setTimeout(() => this.router.navigate(['/my-purchases']), 3000);
+      },
+      error: () => {}
+    });
   }
 
   updateTouristMarker(lat: number, lng: number): void {
@@ -171,7 +191,7 @@ export class TourExecutionComponent implements OnInit, AfterViewInit, OnDestroy 
   }
 
   completeTour(): void {
-    if (!this.executionId) return;
+    if (!this.executionId || !this.allKeypointsCompleted) return;
     this.executionService.completeExecution(this.executionId).subscribe({
       next: () => {
         this.stopInterval();
@@ -190,7 +210,7 @@ export class TourExecutionComponent implements OnInit, AfterViewInit, OnDestroy 
         this.stopInterval();
         this.status = 'ABANDONED';
         this.showToast('Napustili ste turu.');
-        setTimeout(() => this.router.navigate(['/all-tours']), 2000);
+        setTimeout(() => this.router.navigate(['/my-purchases']), 2000);
       },
       error: (err) => { this.error = err?.error?.message || 'Greška pri napuštanju ture.'; }
     });

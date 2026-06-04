@@ -50,4 +50,10 @@ export class TourExecutionService {
   abandonExecution(executionId: number): Observable<TourExecutionResponse> {
     return this.http.post<TourExecutionResponse>(`${this.base}/${executionId}/abandon`, {});
   }
+
+  getActiveExecution(touristId: string, tourId: number): Observable<any> {
+  return this.http.get<any>(
+    `${environment.apiBase}/api/tour-execution/status?touristId=${touristId}&tourId=${tourId}`
+  );
+}
 }
