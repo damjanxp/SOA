@@ -38,9 +38,11 @@ export class MyPurchasesComponent implements OnInit {
 
   loadExecutionStatuses(userId: string): void {
     this.purchases.forEach(p => {
-      this.executionService.getActiveExecution(userId, p.tourId).subscribe({
+      this.executionService.getLatestExecution(userId, p.tourId).subscribe({
         next: (exec) => {
-          if (exec) this.executionStatusMap[p.tourId] = exec.status;
+          if (exec && exec.status) {
+            this.executionStatusMap[p.tourId] = exec.status;
+          }
         },
         error: () => {}
       });

@@ -18,5 +18,7 @@ public interface TourExecutionRepository extends JpaRepository<TourExecution, Lo
                                                 TourExecution.ExecutionStatus status);
 
     Optional<TourExecution> findByTouristIdAndTourIdAndStatus(String touristId, Long tourId,
-      Optional<TourExecution> findTopByTouristIdAndTourIdOrderByStartedAtDesc(String touristId, Long tourId);                                                         TourExecution.ExecutionStatus status);
+                                                               TourExecution.ExecutionStatus status);
+
+    Optional<TourExecution> findTopByTouristIdAndTourIdOrderByStartedAtDesc(String touristId, Long tourId);
 }

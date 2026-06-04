@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 
 export interface TourExecutionResponse {
@@ -51,9 +52,11 @@ export class TourExecutionService {
     return this.http.post<TourExecutionResponse>(`${this.base}/${executionId}/abandon`, {});
   }
 
-  getActiveExecution(touristId: string, tourId: number): Observable<any> {
-  return this.http.get<any>(
-    `${environment.apiBase}/api/tour-execution/status?touristId=${touristId}&tourId=${tourId}`
-  );
-}
+  getLatestExecution(touristId: string, tourId: number): Observable<TourExecutionResponse | null> {
+    return this.http.get<TourExecutionResponse>(
+      `${this.base}/status?touristId=${touristId}&tourId=${tourId}`
+    ).pipe(
+      catchError(() => of(null))
+    );
+  }
 }
