@@ -1,0 +1,39 @@
+<div class="execution-container">
+  <div class="header">
+    <h1>Aktivna tura</h1>
+    <span class="status-badge" [ngClass]="status.toLowerCase()">{{ status }}</span>
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger">
+    {{ error }}
+    <br>
+    <button class="btn btn-secondary" (click)="router.navigate(['/all-tours'])">Nazad</button>
+  </div>
+
+  <div *ngIf="loading && !error" class="loading">Pokretanje ture...</div>
+
+  <div *ngIf="toastMessage" class="toast">{{ toastMessage }}</div>
+
+  <div *ngIf="!loading && !error">
+    <div id="execution-map" style="height: 450px; border-radius: 8px; margin-bottom: 16px;"></div>
+
+    <div class="progress-section">
+      <p><strong>Kompletiranih tačaka:</strong> {{ completedKeyPointIds.size }} / {{ keypoints.length }}</p>
+      <div class="keypoints-list">
+        <span *ngFor="let kp of keypoints" class="kp-badge"
+              [class.completed]="completedKeyPointIds.has(kp.id)">
+          {{ kp.name }}
+        </span>
+      </div>
+    </div>
+
+    <div class="action-buttons">
+      <button class="btn btn-success" (click)="completeTour()" [disabled]="status !== 'ACTIVE'">
+        ✅ Završi turu
+      </button>
+      <button class="btn btn-danger" (click)="abandonTour()" [disabled]="status !== 'ACTIVE'">
+        🚪 Napusti turu
+      </button>
+    </div>
+  </div>
+</div>

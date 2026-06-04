@@ -18,6 +18,7 @@ import { AllToursComponent } from './tour/all-tours/all-tours.component';
 import { PositionSimulatorComponent } from './simulator/position-simulator.component';
 import { CartComponent } from './tour/cart/cart.component';
 import { MyPurchasesComponent } from './tour/my-purchases/my-purchases.component';
+import { TourExecutionComponent } from './tour/tour-execution/tour-execution.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -41,6 +42,7 @@ const routes: Routes = [
   { path: 'tours/:id/keypoints', component: TourKeypointsComponent, canActivate: [AuthGuard, GuideGuard] },
   { path: 'tours/:id/reviews', component: TourReviewsComponent, canActivate: [AuthGuard] },
   { path: 'all-tours', component: AllToursComponent, canActivate: [AuthGuard] },
+  { path: 'tour-execution/:tourId', component: TourExecutionComponent, canActivate: [AuthGuard] },
 
   // Cart & purchases (tourists only)
   { path: 'cart', component: CartComponent, canActivate: [AuthGuard] },

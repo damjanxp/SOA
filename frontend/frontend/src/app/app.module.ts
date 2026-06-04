@@ -24,6 +24,7 @@ import { AllToursComponent } from './tour/all-tours/all-tours.component';
 import { CartComponent } from './tour/cart/cart.component';
 import { MyPurchasesComponent } from './tour/my-purchases/my-purchases.component';
 import { CurrencyPipe } from '@angular/common';
+import { TourExecutionComponent } from './tour/tour-execution/tour-execution.component';
 
 @NgModule({
   declarations: [
@@ -41,6 +42,7 @@ import { CurrencyPipe } from '@angular/common';
     TourDetailComponent,
     TourKeypointsComponent,
     TourReviewsComponent,
+    TourExecutionComponent,
     AllToursComponent,
     PositionSimulatorComponent,
     CartComponent,

@@ -1,0 +1,62 @@
+.execution-container {
+  max-width: 900px;
+  margin: 24px auto;
+  padding: 0 16px;
+
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+    h1 { margin: 0; }
+  }
+
+  .status-badge {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    &.active { background: #d4edda; color: #155724; }
+    &.completed { background: #cce5ff; color: #004085; }
+    &.abandoned { background: #f8d7da; color: #721c24; }
+  }
+
+  .toast {
+    background: #28a745;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    font-weight: 500;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .progress-section {
+    margin-bottom: 16px;
+    .keypoints-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .kp-badge {
+      padding: 4px 10px;
+      border-radius: 12px;
+      background: #e9ecef;
+      font-size: 0.8rem;
+      &.completed { background: #28a745; color: white; }
+    }
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+    .btn { padding: 10px 24px; font-size: 1rem; }
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
