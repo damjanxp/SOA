@@ -2,6 +2,7 @@ package routes
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -222,5 +223,83 @@ func SetupRouter(r *gin.Engine, tourGrpc *clients.TourGrpcClient, publishSaga *s
 		protected.Any("/cart/*path", ReverseProxy(tourURL))
 		protected.Any("/purchases", ReverseProxy(tourURL))
 		protected.Any("/purchases/*path", ReverseProxy(tourURL))
+
+		// Tour service — TourExecution via gRPC
+		protected.GET("/tour-execution/status", ReverseProxy(tourURL))
+
+		protected.POST("/tour-execution/start", func(c *gin.Context) {
+			var body struct {
+				TourId    interface{} `json:"tourId"`
+				StartLat  float64     `json:"startLat"`
+				StartLong float64     `json:"startLong"`
+			}
+			if err := c.ShouldBindJSON(&body); err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
+				return
+			}
+
+			// tourId može doći kao number ili string
+			var tourIdStr string
+			switch v := body.TourId.(type) {
+			case float64:
+				tourIdStr = fmt.Sprintf("%d", int64(v))
+			case string:
+				tourIdStr = v
+			default:
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid tourId"})
+				return
+			}
+
+			touristIdRaw, _ := c.Get("userId")
+			touristId, _ := touristIdRaw.(string)
+
+			resp, err := tourGrpc.StartTourExecution(c.Request.Context(), touristId, tourIdStr, body.StartLat, body.StartLong)
+			if err != nil {
+				c.JSON(http.StatusBadGateway, gin.H{"error": "gRPC error: " + err.Error()})
+				return
+			}
+			if !resp.GetSuccess() {
+				c.JSON(http.StatusBadRequest, gin.H{"error": resp.GetMessage()})
+				return
+			}
+			c.JSON(http.StatusCreated, gin.H{
+				"id":        resp.GetExecutionId(),
+				"status":    resp.GetStatus(),
+				"startedAt": resp.GetStartedAt(),
+				"message":   resp.GetMessage(),
+			})
+		})
+
+		protected.POST("/tour-execution/:executionId/check-nearby", func(c *gin.Context) {
+			executionIdStr := c.Param("executionId")
+			var executionId int64
+			if _, err := fmt.Sscanf(executionIdStr, "%d", &executionId); err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid executionId"})
+				return
+			}
+
+			var body struct {
+				Lat float64 `json:"lat"`
+				Lon float64 `json:"lon"`
+			}
+			if err := c.ShouldBindJSON(&body); err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
+				return
+			}
+
+			resp, err := tourGrpc.CheckNearbyKeyPoint(c.Request.Context(), executionId, body.Lat, body.Lon)
+			if err != nil {
+				c.JSON(http.StatusBadGateway, gin.H{"error": "gRPC error: " + err.Error()})
+				return
+			}
+			c.JSON(http.StatusOK, gin.H{
+				"nearbyFound":  resp.GetNearbyFound(),
+				"keyPointId":   resp.GetKeyPointId(),
+				"lastActivity": resp.GetLastActivity(),
+			})
+		})
+
+		protected.POST("/tour-execution/:executionId/complete", ReverseProxy(tourURL))
+		protected.POST("/tour-execution/:executionId/abandon", ReverseProxy(tourURL))
 	}
 }

@@ -16,6 +16,8 @@ service TourService {
   rpc ReactivateTour(TourIdRequest) returns (TourActionResponse);
   rpc AddToCart(AddToCartRequest) returns (CartResponse);
   rpc Checkout(CheckoutRequest) returns (CheckoutResponse);
+  rpc StartTourExecution (StartTourExecutionRequest) returns (StartTourExecutionResponse);
+  rpc CheckNearbyKeyPoint (CheckNearbyKeyPointRequest) returns (CheckNearbyKeyPointResponse);
 }
 
 // ── existing messages ────────────────────────────────────────────────────────
@@ -143,3 +145,33 @@ message CheckoutResponse {
   string message = 2;
   repeated TourPurchaseTokenMessage tokens = 3;
 }
+
+// ─── Tour Execution messages ───────────────────────────────────────────────
+
+message StartTourExecutionRequest {
+  string tourist_id  = 1;
+  string tour_id     = 2;
+  double start_lat   = 3;
+  double start_long  = 4;
+}
+
+message StartTourExecutionResponse {
+  bool   success      = 1;
+  string message      = 2;
+  int64  execution_id = 3;
+  string status       = 4;
+  string started_at   = 5;
+}
+
+message CheckNearbyKeyPointRequest {
+  int64  execution_id = 1;
+  double lat          = 2;
+  double lon          = 3;
+}
+
+message CheckNearbyKeyPointResponse {
+  bool   nearby_found  = 1;
+  int64  key_point_id  = 2;   // 0 ako nije pronadjena bliska tacka
+  string last_activity = 3;
+}
+

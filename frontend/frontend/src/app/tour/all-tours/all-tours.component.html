@@ -46,6 +46,11 @@
           (click)="addToCart(tour.id!)">
           {{ purchasedTourIds.has(tour.id!) ? 'Kupljeno' : cartTourIds.has(tour.id!) ? 'U korpi' : 'Dodaj u korpu' }}
         </button>
+        <button class="btn btn-warning" 
+        *ngIf="isTourist && purchasedTourIds.has(tour.id!)"
+        (click)="startTour(tour.id!)">
+        ▶ Pokreni
+        </button>
       </div>
     </div>
   </div>

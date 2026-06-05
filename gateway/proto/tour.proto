@@ -10,6 +10,8 @@ service TourService {
   rpc ReactivateTour(TourIdRequest) returns (TourActionResponse);
   rpc AddToCart(AddToCartRequest) returns (CartResponse);
   rpc Checkout(CheckoutRequest) returns (CheckoutResponse);
+  rpc StartTourExecution(StartTourExecutionRequest) returns (StartTourExecutionResponse);
+  rpc CheckNearbyKeyPoint(CheckNearbyKeyPointRequest) returns (CheckNearbyKeyPointResponse);
 }
 
 message Empty {}
@@ -49,8 +51,6 @@ message TourActionResponse {
   string status = 4;
 }
 
-// ── AddToCart RPC Messages ────────────────────────────────────────────────────
-
 message AddToCartRequest {
   string tourist_id = 1;
   string tour_id = 2;
@@ -72,8 +72,6 @@ message CartResponse {
   string created_at = 5;
 }
 
-// ── Checkout RPC Messages ─────────────────────────────────────────────────────
-
 message CheckoutRequest {
   string tourist_id = 1;
 }
@@ -92,3 +90,29 @@ message CheckoutResponse {
   repeated TourPurchaseTokenMessage tokens = 3;
 }
 
+message StartTourExecutionRequest {
+  string tourist_id = 1;
+  string tour_id = 2;
+  double start_lat = 3;
+  double start_long = 4;
+}
+
+message StartTourExecutionResponse {
+  bool success = 1;
+  string message = 2;
+  int64 execution_id = 3;
+  string status = 4;
+  string started_at = 5;
+}
+
+message CheckNearbyKeyPointRequest {
+  int64 execution_id = 1;
+  double lat = 2;
+  double lon = 3;
+}
+
+message CheckNearbyKeyPointResponse {
+  bool nearby_found = 1;
+  int64 key_point_id = 2;
+  string last_activity = 3;
+}

@@ -15,17 +15,13 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-// TourGrpcClient wraps the gRPC client for tour-service and provides REST API fallbacks.
 type TourGrpcClient struct {
-	conn      *grpc.ClientConn
-	client    pb.TourServiceClient
-	restURL   string
+	conn       *grpc.ClientConn
+	client     pb.TourServiceClient
+	restURL    string
 	httpClient *http.Client
 }
 
-// NewTourGrpcClient dials tour-service gRPC server and initializes REST API fallback.
-// Address is read from TOUR_GRPC_URL env var (default: tour-service:9093).
-// REST URL is read from TOUR_SERVICE_URL env var (default: http://tour-service:8080).
 func NewTourGrpcClient() *TourGrpcClient {
 	addr := os.Getenv("TOUR_GRPC_URL")
 	if addr == "" {
@@ -44,19 +40,19 @@ func NewTourGrpcClient() *TourGrpcClient {
 
 	log.Printf("TourGrpcClient connected to gRPC at %s and REST at %s", addr, restURL)
 	return &TourGrpcClient{
-		conn:      conn,
-		client:    pb.NewTourServiceClient(conn),
-		restURL:   restURL,
+		conn:       conn,
+		client:     pb.NewTourServiceClient(conn),
+		restURL:    restURL,
 		httpClient: &http.Client{},
 	}
 }
 
-// Close gracefully closes the gRPC connection.
 func (t *TourGrpcClient) Close() {
 	if t.conn != nil {
 		t.conn.Close()
 	}
 }
+
 func (t *TourGrpcClient) PublishTour(ctx context.Context, tourId, authorId string) (*pb.TourActionResponse, error) {
 	return t.client.PublishTour(ctx, &pb.PublishTourRequest{
 		TourId:   tourId,
@@ -64,22 +60,35 @@ func (t *TourGrpcClient) PublishTour(ctx context.Context, tourId, authorId strin
 	})
 }
 
-// ArchiveTour calls TourService.ArchiveTour via gRPC.
 func (t *TourGrpcClient) ArchiveTour(ctx context.Context, tourId string) (*pb.TourActionResponse, error) {
 	return t.client.ArchiveTour(ctx, &pb.TourIdRequest{
 		TourId: tourId,
 	})
 }
 
-// ReactivateTour calls TourService.ReactivateTour via gRPC.
 func (t *TourGrpcClient) ReactivateTour(ctx context.Context, tourId string) (*pb.TourActionResponse, error) {
 	return t.client.ReactivateTour(ctx, &pb.TourIdRequest{
 		TourId: tourId,
 	})
 }
 
-// AddToCart calls Cart service to add a tour to the tourist's shopping cart.
-// Uses REST API and returns a Go struct CartResponse.
+func (t *TourGrpcClient) StartTourExecution(ctx context.Context, touristId, tourId string, startLat, startLong float64) (*pb.StartTourExecutionResponse, error) {
+	return t.client.StartTourExecution(ctx, &pb.StartTourExecutionRequest{
+		TouristId: touristId,
+		TourId:    tourId,
+		StartLat:  startLat,
+		StartLong: startLong,
+	})
+}
+
+func (t *TourGrpcClient) CheckNearbyKeyPoint(ctx context.Context, executionId int64, lat, lon float64) (*pb.CheckNearbyKeyPointResponse, error) {
+	return t.client.CheckNearbyKeyPoint(ctx, &pb.CheckNearbyKeyPointRequest{
+		ExecutionId: executionId,
+		Lat:         lat,
+		Lon:         lon,
+	})
+}
+
 func (t *TourGrpcClient) AddToCart(ctx context.Context, touristId, tourId string) (map[string]interface{}, error) {
 	url := fmt.Sprintf("%s/api/cart/%s/items", t.restURL, touristId)
 
@@ -121,8 +130,6 @@ func (t *TourGrpcClient) AddToCart(ctx context.Context, touristId, tourId string
 	return cartResp, nil
 }
 
-// Checkout calls Cart service to execute checkout and generate purchase tokens.
-// Uses REST API and returns an array of purchase tokens.
 func (t *TourGrpcClient) Checkout(ctx context.Context, touristId string) ([]map[string]interface{}, error) {
 	url := fmt.Sprintf("%s/api/cart/%s/checkout", t.restURL, touristId)
 
@@ -155,10 +162,6 @@ func (t *TourGrpcClient) Checkout(ctx context.Context, touristId string) ([]map[
 	return checkoutResp, nil
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Helper functions for safe map value extraction
-// ─────────────────────────────────────────────────────────────────────────────
-
 func getStringValue(data map[string]interface{}, key string) string {
 	if val, ok := data[key]; ok {
 		if str, ok := val.(string); ok {
@@ -176,4 +179,3 @@ func getFloatValue(data map[string]interface{}, key string) float64 {
 	}
 	return 0
 }
-

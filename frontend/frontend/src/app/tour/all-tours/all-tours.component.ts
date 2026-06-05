@@ -73,4 +73,9 @@ export class AllToursComponent implements OnInit {
       error: (err) => { this.cartErrors[tourId] = err?.error?.message || 'Greška pri dodavanju u korpu'; }
     });
   }
+
+  startTour(id: number): void {
+  this.router.navigate(['/tour-execution', id]);
+}
+
 }
