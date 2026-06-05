@@ -19,11 +19,15 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	TourService_GetPublishedTours_FullMethodName = "/tour.TourService/GetPublishedTours"
-	TourService_GetTourById_FullMethodName       = "/tour.TourService/GetTourById"
-	TourService_PublishTour_FullMethodName       = "/tour.TourService/PublishTour"
-	TourService_ArchiveTour_FullMethodName       = "/tour.TourService/ArchiveTour"
-	TourService_ReactivateTour_FullMethodName    = "/tour.TourService/ReactivateTour"
+	TourService_GetPublishedTours_FullMethodName   = "/tour.TourService/GetPublishedTours"
+	TourService_GetTourById_FullMethodName         = "/tour.TourService/GetTourById"
+	TourService_PublishTour_FullMethodName         = "/tour.TourService/PublishTour"
+	TourService_ArchiveTour_FullMethodName         = "/tour.TourService/ArchiveTour"
+	TourService_ReactivateTour_FullMethodName      = "/tour.TourService/ReactivateTour"
+	TourService_AddToCart_FullMethodName           = "/tour.TourService/AddToCart"
+	TourService_Checkout_FullMethodName            = "/tour.TourService/Checkout"
+	TourService_StartTourExecution_FullMethodName  = "/tour.TourService/StartTourExecution"
+	TourService_CheckNearbyKeyPoint_FullMethodName = "/tour.TourService/CheckNearbyKeyPoint"
 )
 
 // TourServiceClient is the client API for TourService service.
@@ -35,6 +39,10 @@ type TourServiceClient interface {
 	PublishTour(ctx context.Context, in *PublishTourRequest, opts ...grpc.CallOption) (*TourActionResponse, error)
 	ArchiveTour(ctx context.Context, in *TourIdRequest, opts ...grpc.CallOption) (*TourActionResponse, error)
 	ReactivateTour(ctx context.Context, in *TourIdRequest, opts ...grpc.CallOption) (*TourActionResponse, error)
+	AddToCart(ctx context.Context, in *AddToCartRequest, opts ...grpc.CallOption) (*CartResponse, error)
+	Checkout(ctx context.Context, in *CheckoutRequest, opts ...grpc.CallOption) (*CheckoutResponse, error)
+	StartTourExecution(ctx context.Context, in *StartTourExecutionRequest, opts ...grpc.CallOption) (*StartTourExecutionResponse, error)
+	CheckNearbyKeyPoint(ctx context.Context, in *CheckNearbyKeyPointRequest, opts ...grpc.CallOption) (*CheckNearbyKeyPointResponse, error)
 }
 
 type tourServiceClient struct {
@@ -95,6 +103,46 @@ func (c *tourServiceClient) ReactivateTour(ctx context.Context, in *TourIdReques
 	return out, nil
 }
 
+func (c *tourServiceClient) AddToCart(ctx context.Context, in *AddToCartRequest, opts ...grpc.CallOption) (*CartResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CartResponse)
+	err := c.cc.Invoke(ctx, TourService_AddToCart_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *tourServiceClient) Checkout(ctx context.Context, in *CheckoutRequest, opts ...grpc.CallOption) (*CheckoutResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CheckoutResponse)
+	err := c.cc.Invoke(ctx, TourService_Checkout_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *tourServiceClient) StartTourExecution(ctx context.Context, in *StartTourExecutionRequest, opts ...grpc.CallOption) (*StartTourExecutionResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(StartTourExecutionResponse)
+	err := c.cc.Invoke(ctx, TourService_StartTourExecution_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *tourServiceClient) CheckNearbyKeyPoint(ctx context.Context, in *CheckNearbyKeyPointRequest, opts ...grpc.CallOption) (*CheckNearbyKeyPointResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CheckNearbyKeyPointResponse)
+	err := c.cc.Invoke(ctx, TourService_CheckNearbyKeyPoint_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // TourServiceServer is the server API for TourService service.
 // All implementations must embed UnimplementedTourServiceServer
 // for forward compatibility.
@@ -104,6 +152,10 @@ type TourServiceServer interface {
 	PublishTour(context.Context, *PublishTourRequest) (*TourActionResponse, error)
 	ArchiveTour(context.Context, *TourIdRequest) (*TourActionResponse, error)
 	ReactivateTour(context.Context, *TourIdRequest) (*TourActionResponse, error)
+	AddToCart(context.Context, *AddToCartRequest) (*CartResponse, error)
+	Checkout(context.Context, *CheckoutRequest) (*CheckoutResponse, error)
+	StartTourExecution(context.Context, *StartTourExecutionRequest) (*StartTourExecutionResponse, error)
+	CheckNearbyKeyPoint(context.Context, *CheckNearbyKeyPointRequest) (*CheckNearbyKeyPointResponse, error)
 	mustEmbedUnimplementedTourServiceServer()
 }
 
@@ -128,6 +180,18 @@ func (UnimplementedTourServiceServer) ArchiveTour(context.Context, *TourIdReques
 }
 func (UnimplementedTourServiceServer) ReactivateTour(context.Context, *TourIdRequest) (*TourActionResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ReactivateTour not implemented")
+}
+func (UnimplementedTourServiceServer) AddToCart(context.Context, *AddToCartRequest) (*CartResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AddToCart not implemented")
+}
+func (UnimplementedTourServiceServer) Checkout(context.Context, *CheckoutRequest) (*CheckoutResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method Checkout not implemented")
+}
+func (UnimplementedTourServiceServer) StartTourExecution(context.Context, *StartTourExecutionRequest) (*StartTourExecutionResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method StartTourExecution not implemented")
+}
+func (UnimplementedTourServiceServer) CheckNearbyKeyPoint(context.Context, *CheckNearbyKeyPointRequest) (*CheckNearbyKeyPointResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CheckNearbyKeyPoint not implemented")
 }
 func (UnimplementedTourServiceServer) mustEmbedUnimplementedTourServiceServer() {}
 func (UnimplementedTourServiceServer) testEmbeddedByValue()                     {}
@@ -240,6 +304,78 @@ func _TourService_ReactivateTour_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TourService_AddToCart_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddToCartRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TourServiceServer).AddToCart(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TourService_AddToCart_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TourServiceServer).AddToCart(ctx, req.(*AddToCartRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TourService_Checkout_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CheckoutRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TourServiceServer).Checkout(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TourService_Checkout_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TourServiceServer).Checkout(ctx, req.(*CheckoutRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TourService_StartTourExecution_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StartTourExecutionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TourServiceServer).StartTourExecution(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TourService_StartTourExecution_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TourServiceServer).StartTourExecution(ctx, req.(*StartTourExecutionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TourService_CheckNearbyKeyPoint_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CheckNearbyKeyPointRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TourServiceServer).CheckNearbyKeyPoint(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TourService_CheckNearbyKeyPoint_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TourServiceServer).CheckNearbyKeyPoint(ctx, req.(*CheckNearbyKeyPointRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // TourService_ServiceDesc is the grpc.ServiceDesc for TourService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -266,6 +402,22 @@ var TourService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ReactivateTour",
 			Handler:    _TourService_ReactivateTour_Handler,
+		},
+		{
+			MethodName: "AddToCart",
+			Handler:    _TourService_AddToCart_Handler,
+		},
+		{
+			MethodName: "Checkout",
+			Handler:    _TourService_Checkout_Handler,
+		},
+		{
+			MethodName: "StartTourExecution",
+			Handler:    _TourService_StartTourExecution_Handler,
+		},
+		{
+			MethodName: "CheckNearbyKeyPoint",
+			Handler:    _TourService_CheckNearbyKeyPoint_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

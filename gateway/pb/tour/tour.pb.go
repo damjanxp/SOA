@@ -409,6 +409,654 @@ func (x *TourActionResponse) GetStatus() string {
 	return ""
 }
 
+type AddToCartRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	TouristId     string                 `protobuf:"bytes,1,opt,name=tourist_id,json=touristId,proto3" json:"tourist_id,omitempty"`
+	TourId        string                 `protobuf:"bytes,2,opt,name=tour_id,json=tourId,proto3" json:"tour_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AddToCartRequest) Reset() {
+	*x = AddToCartRequest{}
+	mi := &file_proto_tour_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AddToCartRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AddToCartRequest) ProtoMessage() {}
+
+func (x *AddToCartRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_tour_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AddToCartRequest.ProtoReflect.Descriptor instead.
+func (*AddToCartRequest) Descriptor() ([]byte, []int) {
+	return file_proto_tour_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *AddToCartRequest) GetTouristId() string {
+	if x != nil {
+		return x.TouristId
+	}
+	return ""
+}
+
+func (x *AddToCartRequest) GetTourId() string {
+	if x != nil {
+		return x.TourId
+	}
+	return ""
+}
+
+type OrderItemMessage struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	TourId        string                 `protobuf:"bytes,2,opt,name=tour_id,json=tourId,proto3" json:"tour_id,omitempty"`
+	TourName      string                 `protobuf:"bytes,3,opt,name=tour_name,json=tourName,proto3" json:"tour_name,omitempty"`
+	Price         float64                `protobuf:"fixed64,4,opt,name=price,proto3" json:"price,omitempty"`
+	Status        string                 `protobuf:"bytes,5,opt,name=status,proto3" json:"status,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *OrderItemMessage) Reset() {
+	*x = OrderItemMessage{}
+	mi := &file_proto_tour_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *OrderItemMessage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*OrderItemMessage) ProtoMessage() {}
+
+func (x *OrderItemMessage) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_tour_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use OrderItemMessage.ProtoReflect.Descriptor instead.
+func (*OrderItemMessage) Descriptor() ([]byte, []int) {
+	return file_proto_tour_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *OrderItemMessage) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *OrderItemMessage) GetTourId() string {
+	if x != nil {
+		return x.TourId
+	}
+	return ""
+}
+
+func (x *OrderItemMessage) GetTourName() string {
+	if x != nil {
+		return x.TourName
+	}
+	return ""
+}
+
+func (x *OrderItemMessage) GetPrice() float64 {
+	if x != nil {
+		return x.Price
+	}
+	return 0
+}
+
+func (x *OrderItemMessage) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
+type CartResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	TouristId     string                 `protobuf:"bytes,2,opt,name=tourist_id,json=touristId,proto3" json:"tourist_id,omitempty"`
+	Items         []*OrderItemMessage    `protobuf:"bytes,3,rep,name=items,proto3" json:"items,omitempty"`
+	TotalPrice    float64                `protobuf:"fixed64,4,opt,name=total_price,json=totalPrice,proto3" json:"total_price,omitempty"`
+	CreatedAt     string                 `protobuf:"bytes,5,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CartResponse) Reset() {
+	*x = CartResponse{}
+	mi := &file_proto_tour_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CartResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CartResponse) ProtoMessage() {}
+
+func (x *CartResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_tour_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CartResponse.ProtoReflect.Descriptor instead.
+func (*CartResponse) Descriptor() ([]byte, []int) {
+	return file_proto_tour_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *CartResponse) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *CartResponse) GetTouristId() string {
+	if x != nil {
+		return x.TouristId
+	}
+	return ""
+}
+
+func (x *CartResponse) GetItems() []*OrderItemMessage {
+	if x != nil {
+		return x.Items
+	}
+	return nil
+}
+
+func (x *CartResponse) GetTotalPrice() float64 {
+	if x != nil {
+		return x.TotalPrice
+	}
+	return 0
+}
+
+func (x *CartResponse) GetCreatedAt() string {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return ""
+}
+
+type CheckoutRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	TouristId     string                 `protobuf:"bytes,1,opt,name=tourist_id,json=touristId,proto3" json:"tourist_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CheckoutRequest) Reset() {
+	*x = CheckoutRequest{}
+	mi := &file_proto_tour_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CheckoutRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CheckoutRequest) ProtoMessage() {}
+
+func (x *CheckoutRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_tour_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CheckoutRequest.ProtoReflect.Descriptor instead.
+func (*CheckoutRequest) Descriptor() ([]byte, []int) {
+	return file_proto_tour_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *CheckoutRequest) GetTouristId() string {
+	if x != nil {
+		return x.TouristId
+	}
+	return ""
+}
+
+type TourPurchaseTokenMessage struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	TouristId     string                 `protobuf:"bytes,2,opt,name=tourist_id,json=touristId,proto3" json:"tourist_id,omitempty"`
+	TourId        string                 `protobuf:"bytes,3,opt,name=tour_id,json=tourId,proto3" json:"tour_id,omitempty"`
+	Token         string                 `protobuf:"bytes,4,opt,name=token,proto3" json:"token,omitempty"`
+	PurchasedAt   string                 `protobuf:"bytes,5,opt,name=purchased_at,json=purchasedAt,proto3" json:"purchased_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TourPurchaseTokenMessage) Reset() {
+	*x = TourPurchaseTokenMessage{}
+	mi := &file_proto_tour_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TourPurchaseTokenMessage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TourPurchaseTokenMessage) ProtoMessage() {}
+
+func (x *TourPurchaseTokenMessage) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_tour_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TourPurchaseTokenMessage.ProtoReflect.Descriptor instead.
+func (*TourPurchaseTokenMessage) Descriptor() ([]byte, []int) {
+	return file_proto_tour_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *TourPurchaseTokenMessage) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *TourPurchaseTokenMessage) GetTouristId() string {
+	if x != nil {
+		return x.TouristId
+	}
+	return ""
+}
+
+func (x *TourPurchaseTokenMessage) GetTourId() string {
+	if x != nil {
+		return x.TourId
+	}
+	return ""
+}
+
+func (x *TourPurchaseTokenMessage) GetToken() string {
+	if x != nil {
+		return x.Token
+	}
+	return ""
+}
+
+func (x *TourPurchaseTokenMessage) GetPurchasedAt() string {
+	if x != nil {
+		return x.PurchasedAt
+	}
+	return ""
+}
+
+type CheckoutResponse struct {
+	state         protoimpl.MessageState      `protogen:"open.v1"`
+	Success       bool                        `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Message       string                      `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	Tokens        []*TourPurchaseTokenMessage `protobuf:"bytes,3,rep,name=tokens,proto3" json:"tokens,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CheckoutResponse) Reset() {
+	*x = CheckoutResponse{}
+	mi := &file_proto_tour_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CheckoutResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CheckoutResponse) ProtoMessage() {}
+
+func (x *CheckoutResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_tour_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CheckoutResponse.ProtoReflect.Descriptor instead.
+func (*CheckoutResponse) Descriptor() ([]byte, []int) {
+	return file_proto_tour_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *CheckoutResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *CheckoutResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+func (x *CheckoutResponse) GetTokens() []*TourPurchaseTokenMessage {
+	if x != nil {
+		return x.Tokens
+	}
+	return nil
+}
+
+type StartTourExecutionRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	TouristId     string                 `protobuf:"bytes,1,opt,name=tourist_id,json=touristId,proto3" json:"tourist_id,omitempty"`
+	TourId        string                 `protobuf:"bytes,2,opt,name=tour_id,json=tourId,proto3" json:"tour_id,omitempty"`
+	StartLat      float64                `protobuf:"fixed64,3,opt,name=start_lat,json=startLat,proto3" json:"start_lat,omitempty"`
+	StartLong     float64                `protobuf:"fixed64,4,opt,name=start_long,json=startLong,proto3" json:"start_long,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *StartTourExecutionRequest) Reset() {
+	*x = StartTourExecutionRequest{}
+	mi := &file_proto_tour_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StartTourExecutionRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StartTourExecutionRequest) ProtoMessage() {}
+
+func (x *StartTourExecutionRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_tour_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StartTourExecutionRequest.ProtoReflect.Descriptor instead.
+func (*StartTourExecutionRequest) Descriptor() ([]byte, []int) {
+	return file_proto_tour_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *StartTourExecutionRequest) GetTouristId() string {
+	if x != nil {
+		return x.TouristId
+	}
+	return ""
+}
+
+func (x *StartTourExecutionRequest) GetTourId() string {
+	if x != nil {
+		return x.TourId
+	}
+	return ""
+}
+
+func (x *StartTourExecutionRequest) GetStartLat() float64 {
+	if x != nil {
+		return x.StartLat
+	}
+	return 0
+}
+
+func (x *StartTourExecutionRequest) GetStartLong() float64 {
+	if x != nil {
+		return x.StartLong
+	}
+	return 0
+}
+
+type StartTourExecutionResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	ExecutionId   int64                  `protobuf:"varint,3,opt,name=execution_id,json=executionId,proto3" json:"execution_id,omitempty"`
+	Status        string                 `protobuf:"bytes,4,opt,name=status,proto3" json:"status,omitempty"`
+	StartedAt     string                 `protobuf:"bytes,5,opt,name=started_at,json=startedAt,proto3" json:"started_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *StartTourExecutionResponse) Reset() {
+	*x = StartTourExecutionResponse{}
+	mi := &file_proto_tour_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StartTourExecutionResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StartTourExecutionResponse) ProtoMessage() {}
+
+func (x *StartTourExecutionResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_tour_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StartTourExecutionResponse.ProtoReflect.Descriptor instead.
+func (*StartTourExecutionResponse) Descriptor() ([]byte, []int) {
+	return file_proto_tour_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *StartTourExecutionResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *StartTourExecutionResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+func (x *StartTourExecutionResponse) GetExecutionId() int64 {
+	if x != nil {
+		return x.ExecutionId
+	}
+	return 0
+}
+
+func (x *StartTourExecutionResponse) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
+func (x *StartTourExecutionResponse) GetStartedAt() string {
+	if x != nil {
+		return x.StartedAt
+	}
+	return ""
+}
+
+type CheckNearbyKeyPointRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ExecutionId   int64                  `protobuf:"varint,1,opt,name=execution_id,json=executionId,proto3" json:"execution_id,omitempty"`
+	Lat           float64                `protobuf:"fixed64,2,opt,name=lat,proto3" json:"lat,omitempty"`
+	Lon           float64                `protobuf:"fixed64,3,opt,name=lon,proto3" json:"lon,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CheckNearbyKeyPointRequest) Reset() {
+	*x = CheckNearbyKeyPointRequest{}
+	mi := &file_proto_tour_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CheckNearbyKeyPointRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CheckNearbyKeyPointRequest) ProtoMessage() {}
+
+func (x *CheckNearbyKeyPointRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_tour_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CheckNearbyKeyPointRequest.ProtoReflect.Descriptor instead.
+func (*CheckNearbyKeyPointRequest) Descriptor() ([]byte, []int) {
+	return file_proto_tour_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *CheckNearbyKeyPointRequest) GetExecutionId() int64 {
+	if x != nil {
+		return x.ExecutionId
+	}
+	return 0
+}
+
+func (x *CheckNearbyKeyPointRequest) GetLat() float64 {
+	if x != nil {
+		return x.Lat
+	}
+	return 0
+}
+
+func (x *CheckNearbyKeyPointRequest) GetLon() float64 {
+	if x != nil {
+		return x.Lon
+	}
+	return 0
+}
+
+type CheckNearbyKeyPointResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	NearbyFound   bool                   `protobuf:"varint,1,opt,name=nearby_found,json=nearbyFound,proto3" json:"nearby_found,omitempty"`
+	KeyPointId    int64                  `protobuf:"varint,2,opt,name=key_point_id,json=keyPointId,proto3" json:"key_point_id,omitempty"`
+	LastActivity  string                 `protobuf:"bytes,3,opt,name=last_activity,json=lastActivity,proto3" json:"last_activity,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CheckNearbyKeyPointResponse) Reset() {
+	*x = CheckNearbyKeyPointResponse{}
+	mi := &file_proto_tour_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CheckNearbyKeyPointResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CheckNearbyKeyPointResponse) ProtoMessage() {}
+
+func (x *CheckNearbyKeyPointResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_tour_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CheckNearbyKeyPointResponse.ProtoReflect.Descriptor instead.
+func (*CheckNearbyKeyPointResponse) Descriptor() ([]byte, []int) {
+	return file_proto_tour_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *CheckNearbyKeyPointResponse) GetNearbyFound() bool {
+	if x != nil {
+		return x.NearbyFound
+	}
+	return false
+}
+
+func (x *CheckNearbyKeyPointResponse) GetKeyPointId() int64 {
+	if x != nil {
+		return x.KeyPointId
+	}
+	return 0
+}
+
+func (x *CheckNearbyKeyPointResponse) GetLastActivity() string {
+	if x != nil {
+		return x.LastActivity
+	}
+	return ""
+}
+
 var File_proto_tour_proto protoreflect.FileDescriptor
 
 const file_proto_tour_proto_rawDesc = "" +
@@ -439,13 +1087,73 @@ const file_proto_tour_proto_rawDesc = "" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage\x12\x17\n" +
 	"\atour_id\x18\x03 \x01(\tR\x06tourId\x12\x16\n" +
-	"\x06status\x18\x04 \x01(\tR\x06status2\xbf\x02\n" +
+	"\x06status\x18\x04 \x01(\tR\x06status\"J\n" +
+	"\x10AddToCartRequest\x12\x1d\n" +
+	"\n" +
+	"tourist_id\x18\x01 \x01(\tR\ttouristId\x12\x17\n" +
+	"\atour_id\x18\x02 \x01(\tR\x06tourId\"\x86\x01\n" +
+	"\x10OrderItemMessage\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
+	"\atour_id\x18\x02 \x01(\tR\x06tourId\x12\x1b\n" +
+	"\ttour_name\x18\x03 \x01(\tR\btourName\x12\x14\n" +
+	"\x05price\x18\x04 \x01(\x01R\x05price\x12\x16\n" +
+	"\x06status\x18\x05 \x01(\tR\x06status\"\xab\x01\n" +
+	"\fCartResponse\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1d\n" +
+	"\n" +
+	"tourist_id\x18\x02 \x01(\tR\ttouristId\x12,\n" +
+	"\x05items\x18\x03 \x03(\v2\x16.tour.OrderItemMessageR\x05items\x12\x1f\n" +
+	"\vtotal_price\x18\x04 \x01(\x01R\n" +
+	"totalPrice\x12\x1d\n" +
+	"\n" +
+	"created_at\x18\x05 \x01(\tR\tcreatedAt\"0\n" +
+	"\x0fCheckoutRequest\x12\x1d\n" +
+	"\n" +
+	"tourist_id\x18\x01 \x01(\tR\ttouristId\"\x9b\x01\n" +
+	"\x18TourPurchaseTokenMessage\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1d\n" +
+	"\n" +
+	"tourist_id\x18\x02 \x01(\tR\ttouristId\x12\x17\n" +
+	"\atour_id\x18\x03 \x01(\tR\x06tourId\x12\x14\n" +
+	"\x05token\x18\x04 \x01(\tR\x05token\x12!\n" +
+	"\fpurchased_at\x18\x05 \x01(\tR\vpurchasedAt\"~\n" +
+	"\x10CheckoutResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x18\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\x126\n" +
+	"\x06tokens\x18\x03 \x03(\v2\x1e.tour.TourPurchaseTokenMessageR\x06tokens\"\x8f\x01\n" +
+	"\x19StartTourExecutionRequest\x12\x1d\n" +
+	"\n" +
+	"tourist_id\x18\x01 \x01(\tR\ttouristId\x12\x17\n" +
+	"\atour_id\x18\x02 \x01(\tR\x06tourId\x12\x1b\n" +
+	"\tstart_lat\x18\x03 \x01(\x01R\bstartLat\x12\x1d\n" +
+	"\n" +
+	"start_long\x18\x04 \x01(\x01R\tstartLong\"\xaa\x01\n" +
+	"\x1aStartTourExecutionResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x18\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\x12!\n" +
+	"\fexecution_id\x18\x03 \x01(\x03R\vexecutionId\x12\x16\n" +
+	"\x06status\x18\x04 \x01(\tR\x06status\x12\x1d\n" +
+	"\n" +
+	"started_at\x18\x05 \x01(\tR\tstartedAt\"c\n" +
+	"\x1aCheckNearbyKeyPointRequest\x12!\n" +
+	"\fexecution_id\x18\x01 \x01(\x03R\vexecutionId\x12\x10\n" +
+	"\x03lat\x18\x02 \x01(\x01R\x03lat\x12\x10\n" +
+	"\x03lon\x18\x03 \x01(\x01R\x03lon\"\x87\x01\n" +
+	"\x1bCheckNearbyKeyPointResponse\x12!\n" +
+	"\fnearby_found\x18\x01 \x01(\bR\vnearbyFound\x12 \n" +
+	"\fkey_point_id\x18\x02 \x01(\x03R\n" +
+	"keyPointId\x12#\n" +
+	"\rlast_activity\x18\x03 \x01(\tR\flastActivity2\xe8\x04\n" +
 	"\vTourService\x125\n" +
 	"\x11GetPublishedTours\x12\v.tour.Empty\x1a\x13.tour.ToursResponse\x127\n" +
 	"\vGetTourById\x12\x14.tour.GetTourRequest\x1a\x12.tour.TourResponse\x12A\n" +
 	"\vPublishTour\x12\x18.tour.PublishTourRequest\x1a\x18.tour.TourActionResponse\x12<\n" +
 	"\vArchiveTour\x12\x13.tour.TourIdRequest\x1a\x18.tour.TourActionResponse\x12?\n" +
-	"\x0eReactivateTour\x12\x13.tour.TourIdRequest\x1a\x18.tour.TourActionResponseB\vZ\t./pb/tourb\x06proto3"
+	"\x0eReactivateTour\x12\x13.tour.TourIdRequest\x1a\x18.tour.TourActionResponse\x127\n" +
+	"\tAddToCart\x12\x16.tour.AddToCartRequest\x1a\x12.tour.CartResponse\x129\n" +
+	"\bCheckout\x12\x15.tour.CheckoutRequest\x1a\x16.tour.CheckoutResponse\x12W\n" +
+	"\x12StartTourExecution\x12\x1f.tour.StartTourExecutionRequest\x1a .tour.StartTourExecutionResponse\x12Z\n" +
+	"\x13CheckNearbyKeyPoint\x12 .tour.CheckNearbyKeyPointRequest\x1a!.tour.CheckNearbyKeyPointResponseB\vZ\t./pb/tourb\x06proto3"
 
 var (
 	file_proto_tour_proto_rawDescOnce sync.Once
@@ -459,33 +1167,53 @@ func file_proto_tour_proto_rawDescGZIP() []byte {
 	return file_proto_tour_proto_rawDescData
 }
 
-var file_proto_tour_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
+var file_proto_tour_proto_msgTypes = make([]protoimpl.MessageInfo, 17)
 var file_proto_tour_proto_goTypes = []any{
-	(*Empty)(nil),              // 0: tour.Empty
-	(*GetTourRequest)(nil),     // 1: tour.GetTourRequest
-	(*TourResponse)(nil),       // 2: tour.TourResponse
-	(*ToursResponse)(nil),      // 3: tour.ToursResponse
-	(*PublishTourRequest)(nil), // 4: tour.PublishTourRequest
-	(*TourIdRequest)(nil),      // 5: tour.TourIdRequest
-	(*TourActionResponse)(nil), // 6: tour.TourActionResponse
+	(*Empty)(nil),                       // 0: tour.Empty
+	(*GetTourRequest)(nil),              // 1: tour.GetTourRequest
+	(*TourResponse)(nil),                // 2: tour.TourResponse
+	(*ToursResponse)(nil),               // 3: tour.ToursResponse
+	(*PublishTourRequest)(nil),          // 4: tour.PublishTourRequest
+	(*TourIdRequest)(nil),               // 5: tour.TourIdRequest
+	(*TourActionResponse)(nil),          // 6: tour.TourActionResponse
+	(*AddToCartRequest)(nil),            // 7: tour.AddToCartRequest
+	(*OrderItemMessage)(nil),            // 8: tour.OrderItemMessage
+	(*CartResponse)(nil),                // 9: tour.CartResponse
+	(*CheckoutRequest)(nil),             // 10: tour.CheckoutRequest
+	(*TourPurchaseTokenMessage)(nil),    // 11: tour.TourPurchaseTokenMessage
+	(*CheckoutResponse)(nil),            // 12: tour.CheckoutResponse
+	(*StartTourExecutionRequest)(nil),   // 13: tour.StartTourExecutionRequest
+	(*StartTourExecutionResponse)(nil),  // 14: tour.StartTourExecutionResponse
+	(*CheckNearbyKeyPointRequest)(nil),  // 15: tour.CheckNearbyKeyPointRequest
+	(*CheckNearbyKeyPointResponse)(nil), // 16: tour.CheckNearbyKeyPointResponse
 }
 var file_proto_tour_proto_depIdxs = []int32{
-	2, // 0: tour.ToursResponse.tours:type_name -> tour.TourResponse
-	0, // 1: tour.TourService.GetPublishedTours:input_type -> tour.Empty
-	1, // 2: tour.TourService.GetTourById:input_type -> tour.GetTourRequest
-	4, // 3: tour.TourService.PublishTour:input_type -> tour.PublishTourRequest
-	5, // 4: tour.TourService.ArchiveTour:input_type -> tour.TourIdRequest
-	5, // 5: tour.TourService.ReactivateTour:input_type -> tour.TourIdRequest
-	3, // 6: tour.TourService.GetPublishedTours:output_type -> tour.ToursResponse
-	2, // 7: tour.TourService.GetTourById:output_type -> tour.TourResponse
-	6, // 8: tour.TourService.PublishTour:output_type -> tour.TourActionResponse
-	6, // 9: tour.TourService.ArchiveTour:output_type -> tour.TourActionResponse
-	6, // 10: tour.TourService.ReactivateTour:output_type -> tour.TourActionResponse
-	6, // [6:11] is the sub-list for method output_type
-	1, // [1:6] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	2,  // 0: tour.ToursResponse.tours:type_name -> tour.TourResponse
+	8,  // 1: tour.CartResponse.items:type_name -> tour.OrderItemMessage
+	11, // 2: tour.CheckoutResponse.tokens:type_name -> tour.TourPurchaseTokenMessage
+	0,  // 3: tour.TourService.GetPublishedTours:input_type -> tour.Empty
+	1,  // 4: tour.TourService.GetTourById:input_type -> tour.GetTourRequest
+	4,  // 5: tour.TourService.PublishTour:input_type -> tour.PublishTourRequest
+	5,  // 6: tour.TourService.ArchiveTour:input_type -> tour.TourIdRequest
+	5,  // 7: tour.TourService.ReactivateTour:input_type -> tour.TourIdRequest
+	7,  // 8: tour.TourService.AddToCart:input_type -> tour.AddToCartRequest
+	10, // 9: tour.TourService.Checkout:input_type -> tour.CheckoutRequest
+	13, // 10: tour.TourService.StartTourExecution:input_type -> tour.StartTourExecutionRequest
+	15, // 11: tour.TourService.CheckNearbyKeyPoint:input_type -> tour.CheckNearbyKeyPointRequest
+	3,  // 12: tour.TourService.GetPublishedTours:output_type -> tour.ToursResponse
+	2,  // 13: tour.TourService.GetTourById:output_type -> tour.TourResponse
+	6,  // 14: tour.TourService.PublishTour:output_type -> tour.TourActionResponse
+	6,  // 15: tour.TourService.ArchiveTour:output_type -> tour.TourActionResponse
+	6,  // 16: tour.TourService.ReactivateTour:output_type -> tour.TourActionResponse
+	9,  // 17: tour.TourService.AddToCart:output_type -> tour.CartResponse
+	12, // 18: tour.TourService.Checkout:output_type -> tour.CheckoutResponse
+	14, // 19: tour.TourService.StartTourExecution:output_type -> tour.StartTourExecutionResponse
+	16, // 20: tour.TourService.CheckNearbyKeyPoint:output_type -> tour.CheckNearbyKeyPointResponse
+	12, // [12:21] is the sub-list for method output_type
+	3,  // [3:12] is the sub-list for method input_type
+	3,  // [3:3] is the sub-list for extension type_name
+	3,  // [3:3] is the sub-list for extension extendee
+	0,  // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_proto_tour_proto_init() }
@@ -499,7 +1227,7 @@ func file_proto_tour_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_tour_proto_rawDesc), len(file_proto_tour_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   7,
+			NumMessages:   17,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

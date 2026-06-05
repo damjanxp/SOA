@@ -61,52 +61,72 @@ export class TourExecutionComponent implements OnInit, AfterViewInit, OnDestroy 
   }
 
   ngOnInit(): void {
-    this.tourId = +this.route.snapshot.params['tourId'];
-    const position = this.positionService.getCurrentLocation();
+  this.tourId = +this.route.snapshot.params['tourId'];
+  const position = this.positionService.getCurrentLocation();
 
-    if (!position) {
-      this.error = 'Postavite lokaciju u simulatoru pre pokretanja ture.';
-      this.loading = false;
-      return;
-    }
-
-    const touristId = this.authService.getUserId();
-
-    this.tourService.getKeypoints(this.tourId).subscribe({
-      next: (kps) => {
-        this.keypoints = kps;
-        this.executionService.startExecution(touristId, this.tourId, position.lat, position.lng).subscribe({
-          next: (exec) => {
-            this.executionId = exec.id;
-            this.status = exec.status;
-
-            if (exec.completedKeyPoints && exec.completedKeyPoints.length > 0) {
-              exec.completedKeyPoints.forEach((c: any) => {
-                this.completedKeyPointIds.add(c.keyPointId);
-              });
-            }
-
-            this.loading = false;
-
-            if (this.status === 'ACTIVE') {
-              this.startInterval();
-            }
-          },
-          error: (err) => {
-            this.error = err?.error?.message || 'Greška pri pokretanju ture.';
-            this.loading = false;
-          }
-        });
-      },
-      error: () => {
-        this.error = 'Greška pri učitavanju ključnih tačaka.';
-        this.loading = false;
-      }
-    });
+  if (!position) {
+    this.error = 'Postavite lokaciju u simulatoru pre pokretanja ture.';
+    this.loading = false;
+    return;
   }
 
+  const touristId = this.authService.getUserId();
+
+  this.tourService.getKeypoints(this.tourId).subscribe({
+    next: (kps) => {
+      this.keypoints = kps;
+      this.executionService.startExecution(touristId, this.tourId, position.lat, position.lng).subscribe({
+        next: (exec) => {
+          this.executionId = exec.id;
+          this.status = exec.status;
+
+          // Povuci pun status sa completedKeyPoints
+          this.executionService.getLatestExecution(touristId, this.tourId).subscribe({
+            next: (fullExec) => {
+              if (fullExec && fullExec.completedKeyPoints && fullExec.completedKeyPoints.length > 0) {
+                fullExec.completedKeyPoints.forEach((c: any) => {
+                  this.completedKeyPointIds.add(c.keyPointId);
+                });
+              }
+              this.loading = false;
+              this.tryInitMap();
+              if (this.status === 'ACTIVE') {
+                this.startInterval();
+              }
+            },
+            error: () => {
+              // Ako status poziv ne uspe, nastavi bez completedKeyPoints
+              this.loading = false;
+              this.tryInitMap();
+              if (this.status === 'ACTIVE') {
+                this.startInterval();
+              }
+            }
+          });
+        },
+        error: (err) => {
+          this.error = err?.error?.message || err?.error?.error || 'Greška pri pokretanju ture.';
+          this.loading = false;
+        }
+      });
+    },
+    error: () => {
+      this.error = 'Greška pri učitavanju ključnih tačaka.';
+      this.loading = false;
+    }
+  });
+}
+
   ngAfterViewInit(): void {
-    setTimeout(() => this.initMap(), 300);
+    // mapa se inicijalizuje tek nakon što loading postane false i DOM se ažurira
+  }
+
+  private tryInitMap(): void {
+    setTimeout(() => {
+      const mapEl = document.getElementById('execution-map');
+      if (!mapEl || this.map) return;
+      this.initMap();
+    }, 500);
   }
 
   initMap(): void {
@@ -154,7 +174,6 @@ export class TourExecutionComponent implements OnInit, AfterViewInit, OnDestroy 
             const marker = this.keypointMarkers.get(res.keyPointId);
             if (marker) marker.setIcon(iconGreen);
 
-            // Auto-završi ako su sve tačke kompletiranej
             if (this.allKeypointsCompleted) {
               this.stopInterval();
               this.autoComplete();
